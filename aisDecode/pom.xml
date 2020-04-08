@@ -165,17 +165,11 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
-		<!-- filter library -->
+		<!-- AIS library-->
 		<dependency>
-			<groupId>uk.me.berndporr</groupId>
-			<artifactId>iirj</artifactId>
-			<version>1.1</version>
-		</dependency>
-		<!-- Princton Algorithms, 4th Edition by Robert Sedgewick -->
-		<dependency>
-			<groupId>edu.princeton.cs</groupId>
-			<artifactId>algs4</artifactId>
-			<version>1.0.3</version>
+			<groupId>net.sf.marineapi</groupId>
+			<artifactId>marineapi</artifactId>
+			<version>0.10.0</version>
 		</dependency>
 	</dependencies>
 

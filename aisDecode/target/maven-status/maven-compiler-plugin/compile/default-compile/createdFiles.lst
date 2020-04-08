@@ -1,3 +1,7 @@
-layout\AisDecodeView.class
+aisDecode\AisDecodeAppStarter.class
 aisDecode\AisDecodeControl.class
+aisData\AISPositionReport.class
 aisDecode\AisDecodeApp.class
+aisDecode\AisDecodeApp$1.class
+layout\AisDecodeView.class
+aisData\NMEADataUnit.class
