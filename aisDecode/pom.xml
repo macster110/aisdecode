@@ -94,6 +94,13 @@
 			<artifactId>javafx-web</artifactId>
 			<version>14</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.jfxtras/jmetro -->
+		<dependency>
+			<groupId>org.jfxtras</groupId>
+			<artifactId>jmetro</artifactId>
+			<version>11.6.12</version>
+		</dependency>
 		<!-- Controls FX library -->
 		<dependency>
 			<groupId>org.controlsfx</groupId>
@@ -165,7 +172,7 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
-		<!-- AIS library-->
+		<!-- AIS library -->
 		<dependency>
 			<groupId>net.sf.marineapi</groupId>
 			<artifactId>marineapi</artifactId>

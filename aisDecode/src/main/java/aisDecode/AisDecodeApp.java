@@ -8,6 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import jfxtras.styles.jmetro.JMetro;
+import jfxtras.styles.jmetro.Style;
+import layout.AisDecodeView;
 
 public class AisDecodeApp extends Application {
    public static void main(String[] args) {
@@ -16,21 +19,22 @@ public class AisDecodeApp extends Application {
    
    @Override
    public void start(Stage primaryStage) {
-       primaryStage.setTitle("Hello World!");
-       Button btn = new Button();
-       btn.setText("Say 'Hello World'");
-       btn.setOnAction(new EventHandler<ActionEvent>() {
-
-           @Override
-           public void handle(ActionEvent event) {
-               System.out.println("Hello World!");
-           }
-       });
+       primaryStage.setTitle("AIS Data Converter");
+     
        
+       AisDecodeControl aisDecodeControl= new AisDecodeControl(); 
        
+       AisDecodeView aisDecodeView = new AisDecodeView(aisDecodeControl); 
+       
+              
        StackPane root = new StackPane();
-       root.getChildren().add(btn);
-       primaryStage.setScene(new Scene(root, 300, 250));
+       root.getChildren().add(aisDecodeView);
+       Scene scene = new Scene(root, 250, 300);
+       primaryStage.setScene(scene);
+       
+       JMetro jMetro = new JMetro(Style.LIGHT);
+       jMetro.setScene(scene); 
+       
        primaryStage.show();
    }
 }
