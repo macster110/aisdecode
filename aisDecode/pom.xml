@@ -145,6 +145,12 @@
 			<artifactId>jmetro</artifactId>
 			<version>11.6.9</version>
 		</dependency>
+		<!-- MATLAB file import and export -->
+		<dependency>
+			<groupId>us.hebi.matlab.mat</groupId>
+			<artifactId>mfl-core</artifactId>
+			<version>0.5.6</version>
+		</dependency>
 		<!-- Allows the importing of SVG files for icons. -->
 		<dependency>
 			<groupId>de.codecentric.centerdevice</groupId>
