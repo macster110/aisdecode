@@ -31,7 +31,7 @@ public interface AISFileParser {
 	 * @param file - the file to extract AIS data from. 
 	 * @param aisDataListener - the listener to send data to. 
 	 */
-	public void parseAISFile(File file, AISDataListener aisDataListener); 
+	public void parseAISFile(AISFile file, AISDataListener aisDataListener); 
 
 
 }

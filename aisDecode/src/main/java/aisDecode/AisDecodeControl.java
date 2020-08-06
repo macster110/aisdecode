@@ -4,11 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import aisDataImport.AISFile;
 import aisDataImport.AISFileParser;
 import aisDataImport.ImportCSVData;
 import aisExport.AISDataExporter;
 import aisExport.ExportAISMATLAB;
 import aisExport.ExportAISSQLite;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
 
 /**
@@ -19,8 +21,8 @@ import javafx.concurrent.Task;
  *
  */
 public class AisDecodeControl {
-	
-	public enum AISMessage {IMPORT_DATA_START}
+
+	public enum AISMessage {IMPORT_DATA_START, IMPORT_DATA_OVER, IMPORT_DATA_CANCELLED, IMPORT_DATA_ERROR}
 
 	/**
 	 * The parameters for AIS data import e.g. import, expoert files.
@@ -98,11 +100,25 @@ public class AisDecodeControl {
 	 * Run the import and export on a different thread. 
 	 */
 	public void runAISDecode() {
-		
+
 		System.out.println("Run AIS Decode"); 
 		currentTask  = new RunTask();
+
+		currentTask.setOnSucceeded((a)->{
+			updateMessageListeners(AISMessage.IMPORT_DATA_OVER, currentTask); 
+		});
+
+		currentTask.setOnFailed((a)->{
+			updateMessageListeners(AISMessage.IMPORT_DATA_ERROR, currentTask); 
+		});
+
+		currentTask.setOnCancelled((a)->{
+			updateMessageListeners(AISMessage.IMPORT_DATA_CANCELLED, currentTask); 
+		});
+
+
 		updateMessageListeners(AISMessage.IMPORT_DATA_START, currentTask); 
-		
+
 		Thread th = new Thread(currentTask);
 		th.setDaemon(true);
 		th.start();
@@ -129,6 +145,10 @@ public class AisDecodeControl {
 
 		double nfile = 0 ; 
 
+
+		SimpleBooleanProperty isCancelled = new SimpleBooleanProperty(); 
+
+
 		@Override 
 		protected Integer call() throws Exception {
 
@@ -150,17 +170,18 @@ public class AisDecodeControl {
 			}
 
 
+
 			//iterate through each file and parse
 			nfile=0; 
 			for (File aisFile: inputFiles) {
 				if (this.isCancelled()) return -1; 
-				importFileParser.parseAISFile(aisFile, (newData, progressFile, updateMessage)->{
+				importFileParser.parseAISFile(new AISFile(aisFile, (int) nfile, inputFiles.size(), isCancelled), (newData, progressFile, updateMessage)->{
 					//once new data has been parsed send it to the exporter
 					exportAISData.newAISData(newData); 
 
 					//the overall progress is the current number of files in plus the fraction of a file of progressFile
 					final double nn = nfile; 
-					
+
 					System.out.println("Progress: " + nn+progressFile); 
 
 					updateProgress(nn+progressFile, inputFiles.size()); 
@@ -170,6 +191,11 @@ public class AisDecodeControl {
 			}
 
 			return 1; 
+		}
+
+		@Override protected void cancelled() {
+			super.cancelled();
+			isCancelled.setValue(true);
 		}
 	}
 
@@ -192,6 +218,19 @@ public class AisDecodeControl {
 	public void addNotifyListener(AISNotifyListener aisNotifyListener) {
 		this.aisNotifyListeners.add(aisNotifyListener); 
 	}
+
+
+	/**
+	 * Check to see if a task is currently running
+	 * @return true of the import ask is running. 
+	 */
+	public boolean isRunning() {
+		if (currentTask ==null) return false; 
+		return this.currentTask.isRunning(); 
+	}
+
+
+
 
 
 }
