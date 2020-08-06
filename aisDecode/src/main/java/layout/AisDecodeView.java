@@ -5,6 +5,9 @@ import java.io.File;
 import org.controlsfx.control.ToggleSwitch;
 
 import aisDecode.AisDecodeControl;
+import aisDecode.AisDecodeControl.AISMessage;
+import aisDecode.AisDecodeControl.RunTask;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -12,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -52,14 +56,14 @@ public class AisDecodeView extends BorderPane {
 	private ChoiceBox<String> importChoiceBox;
 
 	/**
-	 * Choice box for selected whcih file type to export AIS to. 
+	 * Choice box for selected which file type to export AIS to. 
 	 */
 	private ChoiceBox<String> exportChoiceBox;
 
 	/**
 	 * Label to show the current input directory 
 	 */
-	private Label fileLabel;
+	private Label inputFileLabel;
 
 	/**
 	 * Toggle switch to append data to the output file or write a new file
@@ -81,13 +85,15 @@ public class AisDecodeView extends BorderPane {
 	 */
 	private Label statusLabel;
 
+	private Label outputFileLabel;
+
 	/**
 	 * Default for headings. 
 	 */
 	public static Font titleFont = new Font(16); 
 
 	/**
-	 * The default incon size
+	 * The default icon size.
 	 */
 	public static int iconSize = 25; //pixels
 
@@ -97,7 +103,9 @@ public class AisDecodeView extends BorderPane {
 		this.stage=stage; 
 		this.setCenter(createMainPane());
 		//this.getStyleClass().add(JMetroStyleClass.BACKGROUND);
-
+		aisControl.addNotifyListener((flag, data)->{
+			notifyUpdate(flag, data); 
+		}); 
 	}
 
 	/**
@@ -146,6 +154,7 @@ public class AisDecodeView extends BorderPane {
 		runLabel.setFont(titleFont);
 
 		progressBar = new ProgressBar(); 
+		progressBar.setProgress(0);
 		HBox.setHgrow(progressBar, Priority.ALWAYS);
 		progressBar.setMaxWidth(Double.POSITIVE_INFINITY);
 
@@ -163,8 +172,8 @@ public class AisDecodeView extends BorderPane {
 
 		HBox controlButtons = new HBox(); 
 		controlButtons.setSpacing(5); 
+		controlButtons.setAlignment(Pos.CENTER_LEFT);
 		controlButtons.getChildren().addAll(start, progressBar); 
-
 
 		progressPane.getChildren().addAll(runLabel, controlButtons, statusLabel = new Label("")); 
 
@@ -191,12 +200,15 @@ public class AisDecodeView extends BorderPane {
 		importChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
 
 		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setInitialDirectory(new File("src"));
 
 		Button fileImportButton = new Button(); 
 		fileImportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
-			//TODO
+			if (selectedDirectory!=null) {
+				this.aisControl.getAisDecodeParams().inputDirectory = selectedDirectory.getAbsolutePath(); 
+			}
+			inputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().inputDirectory);
+			inputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().inputDirectory));
 		});
 
 		HBox.setHgrow(importChoiceBox, Priority.ALWAYS);
@@ -213,7 +225,7 @@ public class AisDecodeView extends BorderPane {
 		importFilePane.getChildren().addAll(importChoiceBox, fileImportButton); 
 		importFilePane.prefWidthProperty().bind(importPane.widthProperty()); 
 
-		importPane.getChildren().addAll(importLabel, importFilePane, fileLabel = new Label("File:")); 
+		importPane.getChildren().addAll(importLabel, importFilePane, inputFileLabel = new Label("File:")); 
 
 		return importPane;
 	}
@@ -235,14 +247,26 @@ public class AisDecodeView extends BorderPane {
 		exportChoiceBox.getSelectionModel().select(0);
 		exportChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
 
-		Button fileImportButton = new Button(); 
+		
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+
+		Button fileExportButton = new Button(); 
+		fileExportButton.setOnAction(e -> {
+			File selectedDirectory = directoryChooser.showDialog(stage);
+			if (selectedDirectory!=null) {
+				this.aisControl.getAisDecodeParams().outputDirectory = selectedDirectory.getAbsolutePath(); 
+			}
+			outputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().outputDirectory);
+			outputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().outputDirectory));
+		});
+
 		HBox.setHgrow(exportChoiceBox, Priority.ALWAYS);
 
 		MDL2IconFont iconFont1 = new MDL2IconFont("\uE8E5");
 		//iconFont1.setSize(30);
-		fileImportButton.setGraphic(iconFont1);
+		fileExportButton.setGraphic(iconFont1);
 
-		exportChoiceBox.prefHeightProperty().bind(fileImportButton.heightProperty());
+		exportChoiceBox.prefHeightProperty().bind(fileExportButton.heightProperty());
 
 		appendSwitch = new ToggleSwitch(); 
 
@@ -250,19 +274,38 @@ public class AisDecodeView extends BorderPane {
 		HBox importFilePane = new HBox(); 
 		importFilePane.setSpacing(5);
 		importFilePane.setAlignment(Pos.CENTER_LEFT);
-		importFilePane.getChildren().addAll( exportChoiceBox, fileImportButton); 
+		importFilePane.getChildren().addAll( exportChoiceBox, fileExportButton); 
 		importFilePane.prefWidthProperty().bind(importPane.widthProperty()); 
 
 		HBox appendPane = new HBox(); 
 		appendPane.setSpacing(5);
 		appendPane.setAlignment(Pos.CENTER_RIGHT);
 		Label appnedLabel = new Label("Append"); 
-//		appnedLabel.setStyle("-fx-font-weight: bold");
+		//		appnedLabel.setStyle("-fx-font-weight: bold");
 		appendPane.getChildren().addAll(appendSwitch, appnedLabel); 
 
-		importPane.getChildren().addAll(exportLabel, importFilePane, fileLabel = new Label("File:"),  appendPane); 
+		importPane.getChildren().addAll(exportLabel, importFilePane, outputFileLabel = new Label("File:"),  appendPane); 
 		return importPane;
 
 	} 
+
+
+	/**
+	 * Notification flag sent from the controller. 
+	 * @param update - notify date. 
+	 * @param data - the data associated with the update. 
+	 */
+	public void notifyUpdate(AISMessage update, Object data) {
+
+		switch (update) {
+		case IMPORT_DATA_START:
+			//bind the progress property. 
+			progressBar.progressProperty().bind(((RunTask) data).progressProperty());
+			statusLabel.textProperty().bind(((RunTask) data).messageProperty());
+			break;
+		default:
+			break;
+		}
+	}
 
 }

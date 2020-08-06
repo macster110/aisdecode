@@ -19,7 +19,7 @@ public class AISDecodeParams {
 		/**
 		 * The file input directory. 
 		 */
-		public File inputDirectory = null; 
+		public String inputDirectory = null; 
 		
 		/**
 		 * The index of the output file type.
@@ -27,9 +27,9 @@ public class AISDecodeParams {
 		public int fileOutpUtType = 0 ; 
 	
 		/**
-		 * The file input directory. 
+		 * The file output directory. 
 		 */
-		public File outputFile = null; 
+		public String outputDirectory = null; 
 			
 
 }

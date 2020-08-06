@@ -1,4 +1,4 @@
-package aisData;
+package aisDataImport;
 
 /*
  * AISListenerExample.java
@@ -30,8 +30,6 @@ import net.sf.marineapi.ais.message.AISMessage01;
 import net.sf.marineapi.ais.event.AbstractAISMessageListener;
 import net.sf.marineapi.nmea.event.SentenceEvent;
 import net.sf.marineapi.nmea.io.SentenceReader;
-import net.sf.marineapi.nmea.sentence.AISSentence;
-import net.sf.marineapi.nmea.sentence.Sentence;
 
 /**
  * Simple example application that takes a filename as command-line argument and

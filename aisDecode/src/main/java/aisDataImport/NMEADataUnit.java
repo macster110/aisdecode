@@ -1,4 +1,4 @@
-package aisData;
+package aisDataImport;
 
 
 /**
