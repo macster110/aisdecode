@@ -90,7 +90,7 @@ public class AISListenerExample extends AbstractAISMessageListener<AISMessage01>
 //			System.exit(1);
 //		}
 		
-		String filepath = "E:\\aisdk_20181101.csv";
+		String filepath = "C:\\Users\\au671271\\Desktop\\AISNMEATestData\\nmea-sample";
 
 		try {
 			new AISListenerExample(new File(filepath));

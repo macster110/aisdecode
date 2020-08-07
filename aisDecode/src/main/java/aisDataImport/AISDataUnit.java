@@ -11,6 +11,7 @@ package aisDataImport;
  * <li>IMO - The International Maritime Organization number is a unique identifier for ships, registered ship owners and management companies.</li>
  * <li>Lat - the latitude of the vessel.</li>
  * <li>Lon - the longitude of the vessel.</li>
+ * <li>ROT -  speed over ground in knots.</li>
  * <li>SOG -  speed over ground in knots.</li>
  * <li>COG - course over ground in degrees. </li>
  * <li>Width - the width of the vessel in meters.</li>
@@ -37,58 +38,66 @@ public class AISDataUnit {
 	/**
 	 * The time in millis
 	 */
-	private long time; 
+	protected long time; 
 	
 	/**
 	 * The vessel's  Maritime Mobile Service Identity (MMSI) number
 	 */
-	private int MMSI; 
+	protected int MMSI; 
 
 	/**
 	 * The International Maritime Organization (IMO) number.
 	 */
-	private int IMO; 
+	protected String IMO; 
 
 	/**
 	 * The latitiude of the vessel in decimal. 
 	 */
-	private double latitude; 
+	protected double latitude; 
 
 	/**
 	 * The longitude of the vessel in longitude. 
 	 */
-	private double longitude; 
+	protected double longitude; 
 	
 	/**
 	 * The speed over fround in knots 
 	 */
-	private double SOG; 
+	protected double SOG; 
 	
 	/**
 	 * The course over ground; a bearing in degrees. 
 	 */
-	private double COG;
+	protected double COG;
 	
 	/**
 	 * The width of the vessel in meters
 	 */
-	private double width;
+	protected double width;
 	
 	/**
 	 * The length of the vessel in meters
 	 */
-	private double length; 
+	protected double length; 
 	
 	/**
 	 * The name of the vessel
 	 */
-	private double name;
+	protected String name;
 	
 	/**
 	 * The vessel type. 
 	 */
-	private int type; 
-	
+	protected String type;
+
+	/**
+	 * Rate of turn of the vessl.
+	 */
+	public double ROT;
+
+	public double heading;
+
+	public double draught;
 	
 	public long getTime() {
 		return time;
@@ -106,11 +115,11 @@ public class AISDataUnit {
 		MMSI = mMSI;
 	}
 
-	public int getIMO() {
+	public String getIMO() {
 		return IMO;
 	}
 
-	public void setIMO(int iMO) {
+	public void setIMO(String iMO) {
 		IMO = iMO;
 	}
 
@@ -162,19 +171,19 @@ public class AISDataUnit {
 		this.length = length;
 	}
 
-	public double getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(double name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
-	public int getType() {
+	public String getType() {
 		return type;
 	}
 
-	public void setType(int type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 

@@ -1,6 +1,5 @@
 package aisDataImport;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import aisDecode.AISDataListener;

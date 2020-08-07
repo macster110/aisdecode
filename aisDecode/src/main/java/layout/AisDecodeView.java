@@ -2,6 +2,7 @@ package layout;
 
 import java.io.File;
 
+import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.ToggleSwitch;
 
@@ -14,7 +15,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Labeled;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
@@ -237,7 +237,9 @@ public class AisDecodeView extends BorderPane {
 
 
 		importChoiceBox = new ChoiceBox<String>(); 
-		importChoiceBox.getItems().addAll("Danish Maritime CSV", "NMEA File");
+		for (int i=0; i<aisControl.getAISFileParsers().size(); i++) {
+			importChoiceBox.getItems().add(aisControl.getAISFileParsers().get(i).getName());
+		}
 		importChoiceBox.getSelectionModel().select(0);
 		importChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
 
@@ -285,7 +287,10 @@ public class AisDecodeView extends BorderPane {
 		exportLabel.setFont(titleFont);
 
 		exportChoiceBox = new ChoiceBox<String>(); 
-		exportChoiceBox.getItems().addAll("SQLITE", "MATLAB");
+		for (int i=0; i<aisControl.getAISDataExporters().size(); i++) {
+			exportChoiceBox.getItems().add(aisControl.getAISDataExporters().get(i).getName());
+
+		}
 		exportChoiceBox.getSelectionModel().select(0);
 		exportChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
 
@@ -334,8 +339,8 @@ public class AisDecodeView extends BorderPane {
 		VBox advPane = new VBox();
 		advPane.setSpacing(5);
 
-		Label exportLabel = new Label("Advanced Settings"); 
-		exportLabel.setFont(titleFont);
+		Label advLabel = new Label("Advanced Settings"); 
+		advLabel.setFont(titleFont);
 
 		appendSwitch = new ToggleSwitch(); 
 
@@ -344,9 +349,17 @@ public class AisDecodeView extends BorderPane {
 		appendPane.setAlignment(Pos.CENTER_RIGHT);
 		Label appnedLabel = new Label("Append"); 
 		//		appnedLabel.setStyle("-fx-font-weight: bold");
+		
 		appendPane.getChildren().addAll(appendSwitch, appnedLabel); 
 
-		advPane.getChildren().addAll(exportLabel, appendPane); 
+		Label aisExporFieldsLabel = new Label("AIS Export Fields"); 
+		aisExporFieldsLabel.setFont(titleFont);
+		
+		CheckComboBox<String> checkComboBox =  new CheckComboBox<String>(); 
+		checkComboBox.getItems().addAll("TIME", "LATITUDE", "LONGTIDE", "GOG"); 
+		checkComboBox.setPrefWidth(150);
+
+		advPane.getChildren().addAll(advLabel, appendPane, aisExporFieldsLabel, checkComboBox); 
 
 		advPane.setPadding(new Insets(10,10,10,10)); 
 

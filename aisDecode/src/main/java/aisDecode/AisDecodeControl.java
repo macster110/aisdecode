@@ -3,10 +3,12 @@ package aisDecode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import aisDataImport.AISFile;
 import aisDataImport.AISFileParser;
 import aisDataImport.ImportCSVData;
+import aisDataImport.ImportNMEA;
 import aisExport.AISDataExporter;
 import aisExport.ExportAISMATLAB;
 import aisExport.ExportAISSQLite;
@@ -54,6 +56,8 @@ public class AisDecodeControl {
 		/***Add input and output files here***/
 		//input files types
 		importAISFileTypes.add(new ImportCSVData()); 
+		importAISFileTypes.add(new ImportNMEA()); 
+
 		//export files types
 		exportAISFileTypes.add(new ExportAISMATLAB()); 
 		exportAISFileTypes.add(new ExportAISSQLite()); 
@@ -228,6 +232,9 @@ public class AisDecodeControl {
 		if (currentTask ==null) return false; 
 		return this.currentTask.isRunning(); 
 	}
+
+
+
 
 
 
