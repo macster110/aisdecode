@@ -1,6 +1,8 @@
 package layout;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.ZoneId;
 
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
@@ -16,6 +18,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Spinner;
@@ -104,6 +107,9 @@ public class AisDecodeView extends BorderPane {
 	 */
 	private Button runButton;
 
+	/**
+	 * Spinner to select the maximum file output size. 
+	 */
 	private Spinner<Double> maxFileSizeSpinner;
 
 	private Spinner<Double> minLatitudeSpinner;
@@ -114,7 +120,31 @@ public class AisDecodeView extends BorderPane {
 
 	private Spinner<Double> maxLongitudeSpinner;
 
+	/**
+	 * Selects whether a latitude and longitude filter should be used. 
+	 */
 	private ToggleSwitch latLongFilterSwitch;
+
+	/**
+	 * Combo Box which allows the user to select which data types to output/. 
+	 */
+	private CheckComboBox<String> checkComboBox;
+
+	/**
+	 * The last successfully selected import directory 
+	 */
+	private String inputDirectory;
+
+	/**
+	 * The last successfully selected output directory. 
+	 */
+	private String outputDirectory;
+
+	private DatePicker datePickerMin;
+
+	private DatePicker datePickerMax;
+
+	private ToggleSwitch timeFilterSwitch;
 
 	/**
 	 * Default for headings. 
@@ -144,11 +174,12 @@ public class AisDecodeView extends BorderPane {
 	private Node createMainPane() {
 
 		VBox mainPane = new VBox(); 
-		mainPane.setSpacing(20);
+		mainPane.setSpacing(18);
 
 		Label headerLabel = new Label("AIS Importer");
 		headerLabel.getStyleClass().add("header");
-
+		headerLabel.setTooltip(new Tooltip("AIS Importer imports a folder of AIS files and exports to user defined files \n"
+				+ "and also allows for some limited filtering of data types, position and time."));
 
 
 		Pane importPane = createImportPane();
@@ -174,17 +205,17 @@ public class AisDecodeView extends BorderPane {
 
 		HBox advPane = new HBox(); 
 		advPane.setSpacing(5);
-		advPane.setAlignment(Pos.CENTER_RIGHT);
-		Label appnedLabel = new Label("Advanced Settings"); 
-		//		appnedLabel.setStyle("-fx-font-weight: bold");
-		advPane.getChildren().addAll(appnedLabel, advButton); 
+		advPane.setAlignment(Pos.CENTER_LEFT);
+		Label advLabel = new Label("Advanced Settings"); 
+		advLabel.setFont(titleFont);
+		//		advLabel.setStyle("-fx-font-weight: bold");
+		advPane.getChildren().addAll(advButton, advLabel); 
 
 
 		Pane runPane = createControlPane(); 
 		runPane.prefWidthProperty().bind(this.widthProperty());
 
-
-		mainPane.getChildren().addAll(headerLabel, importPane, exportPane, advPane, runPane); 
+		mainPane.getChildren().addAll(headerLabel, importPane, exportPane, runPane, advPane); 
 		mainPane.setPadding(new Insets(5,5,5,5));
 
 		return mainPane;
@@ -222,6 +253,7 @@ public class AisDecodeView extends BorderPane {
 				runButton.setGraphic(new MDL2IconFont("\uE71A"));
 			}
 		});
+		runButton.setTooltip(new Tooltip("Start importing data from the import folder and exporting to the export folder"));
 
 		//		Button stop = new Button(); 
 		//		stop.setOnAction((action)->{
@@ -251,6 +283,7 @@ public class AisDecodeView extends BorderPane {
 
 		Label importLabel = new Label("Import from"); 
 		importLabel.setFont(titleFont);
+		importLabel.setTooltip(new Tooltip("Select the type of AIS files to import and the directory to import from.")); 
 
 
 		importChoiceBox = new ChoiceBox<String>(); 
@@ -259,6 +292,7 @@ public class AisDecodeView extends BorderPane {
 		}
 		importChoiceBox.getSelectionModel().select(0);
 		importChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
+		importChoiceBox.setTooltip(new Tooltip("Select the type of AIS files to import.")); 
 
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 
@@ -266,7 +300,7 @@ public class AisDecodeView extends BorderPane {
 		fileImportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
 			if (selectedDirectory!=null) {
-				this.aisControl.getAisDecodeParams().inputDirectory = selectedDirectory.getAbsolutePath(); 
+				this.inputDirectory = selectedDirectory.getAbsolutePath(); 
 			}
 			inputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().inputDirectory);
 			inputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().inputDirectory));
@@ -277,6 +311,8 @@ public class AisDecodeView extends BorderPane {
 		MDL2IconFont iconFont1 = new MDL2IconFont("\uE8E5");
 		//iconFont1.setSize(30);
 		fileImportButton.setGraphic(iconFont1);
+		fileImportButton.setTooltip(new Tooltip("Select the folder containing the AIS files to import.")); 
+
 
 		importChoiceBox.prefHeightProperty().bind(fileImportButton.heightProperty());
 
@@ -302,6 +338,7 @@ public class AisDecodeView extends BorderPane {
 
 		Label exportLabel = new Label("Save to"); 
 		exportLabel.setFont(titleFont);
+		exportLabel.setTooltip(new Tooltip("Select the type of file to save AIS to and the directory to export to.")); 
 
 		exportChoiceBox = new ChoiceBox<String>(); 
 		for (int i=0; i<aisControl.getAISDataExporters().size(); i++) {
@@ -310,6 +347,7 @@ public class AisDecodeView extends BorderPane {
 		}
 		exportChoiceBox.getSelectionModel().select(0);
 		exportChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
+		exportChoiceBox.setTooltip(new Tooltip("Select the type of file to export data to.")); 
 
 
 		DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -318,7 +356,7 @@ public class AisDecodeView extends BorderPane {
 		fileExportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
 			if (selectedDirectory!=null) {
-				this.aisControl.getAisDecodeParams().outputDirectory = selectedDirectory.getAbsolutePath(); 
+				outputDirectory = selectedDirectory.getAbsolutePath(); 
 			}
 			outputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().outputDirectory);
 			outputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().outputDirectory));
@@ -329,6 +367,8 @@ public class AisDecodeView extends BorderPane {
 		MDL2IconFont iconFont1 = new MDL2IconFont("\uE8E5");
 		//iconFont1.setSize(30);
 		fileExportButton.setGraphic(iconFont1);
+		fileExportButton.setTooltip(new Tooltip("Select the folder to export AIS data to. Data will be exported in multiple files\n "
+				+ "if the file size exceeds the maximum file size defined in advanced settings.")); 
 
 		exportChoiceBox.prefHeightProperty().bind(fileExportButton.heightProperty());
 
@@ -354,11 +394,11 @@ public class AisDecodeView extends BorderPane {
 	private Pane createAdvMenuPane() {
 
 		VBox advPane = new VBox();
-		advPane.setSpacing(5);
+		advPane.setSpacing(9);
 
 		Label advLabel = new Label("Advanced Settings"); 
 		advLabel.setFont(titleFont);
-		
+
 		int spinerWidth = 85; 
 
 
@@ -366,13 +406,13 @@ public class AisDecodeView extends BorderPane {
 
 		//appendLabel.setStyle("-fx-font-weight: bold");
 		//appendPane.getChildren().addAll(appendSwitch, appnedLabel); 
-		
+
 		/***Controls for selecting which fields are exported****/
 
 		Label aisExporFieldsLabel = new Label("AIS Export Fields"); 
 		aisExporFieldsLabel.setFont(titleFont);
-		
-		CheckComboBox<String> checkComboBox =  new CheckComboBox<String>(); 
+
+		checkComboBox =  new CheckComboBox<String>(); 
 		for (int i=0; i<AISDataTypes.values().length; i++) {
 			checkComboBox.getItems().add(AISDataTypes.values()[i].toString()); 
 			checkComboBox.getItemBooleanProperty(i).setValue(true);
@@ -380,9 +420,10 @@ public class AisDecodeView extends BorderPane {
 		checkComboBox.getCheckModel().checkAll();
 		checkComboBox.setMaxWidth(Double.POSITIVE_INFINITY);
 		checkComboBox.prefWidthProperty().bind(advPane.widthProperty());
-		
+		checkComboBox.setTooltip(new Tooltip("Select which AIS data fields to export to the output files")); 
+
 		/***Settings the maximum files size***/
-		
+
 		HBox maxFileSizePane = new HBox(); 
 		maxFileSizePane.setSpacing(5);
 		maxFileSizePane.setAlignment(Pos.CENTER_LEFT);
@@ -391,46 +432,53 @@ public class AisDecodeView extends BorderPane {
 		maxFileSizeSpinner.setEditable(true);
 		maxFileSizeSpinner.setPrefWidth(spinerWidth);
 		maxFileSizePane.getChildren().addAll(maxFileSizeLabel, maxFileSizeSpinner, new Label("MB")); 
-		
+		maxFileSizeSpinner.setTooltip(new Tooltip("Set the maximum file size. Exported data will be exported as a series of time \n stamped files if "
+				+ "the file size limit is reached. ")); 
+
 		/***Settings limits on the latitude and longitude data to include***/
 
 		Label latLongFilterLabel = new Label("Latitude/Longitude Limits");
+		latLongFilterLabel.setTooltip(new Tooltip("Set a latitude/longtiude rectangle from which to export data. Any data \n "
+				+ "outside this rectangle will not be exported to output files")); 
 		latLongFilterLabel.setFont(titleFont);
-		
+
 		latLongFilterSwitch = new ToggleSwitch(); 
 		latLongFilterSwitch.selectedProperty().addListener((obsval, oldVal, newVal)->{
 			enableControls(); 
 		});
+		latLongFilterSwitch.setTooltip(new Tooltip("Select whether to filter AIS data by latitude and longitude. Disable to import \n all AIS data.")); 
+
+		HBox latLongFilterPane = new HBox(); 
+		latLongFilterPane.setSpacing(5);
+		latLongFilterPane.getChildren().addAll(latLongFilterSwitch, latLongFilterLabel); 
 
 		minLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
 		minLatitudeSpinner.setPrefWidth(spinerWidth);
 		minLatitudeSpinner.setEditable(true);
-		
+		minLatitudeSpinner.setTooltip(new Tooltip("The minimum latitude to import in decimal degrees")); 
+
 		maxLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
 		maxLatitudeSpinner.setEditable(true);	
 		maxLatitudeSpinner.setPrefWidth(spinerWidth);
+		maxLatitudeSpinner.setTooltip(new Tooltip("The maximum latitude to import in decimal degrees")); 
 
-		
+
 		minLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1);
 		minLongitudeSpinner.setEditable(true);
 		minLongitudeSpinner.setPrefWidth(spinerWidth);
+		minLongitudeSpinner.setTooltip(new Tooltip("The minimum longitude to import in decimal degrees")); 
 
 		maxLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
 		maxLongitudeSpinner.setEditable(true);
 		maxLongitudeSpinner.setPrefWidth(spinerWidth);
+		maxLongitudeSpinner.setTooltip(new Tooltip("The maximum longitude to import in decimal degrees")); 
 
 
 		GridPane latLongPane = new GridPane(); 
 		latLongPane.setHgap(5);
-		latLongPane.setVgap(10);
+		latLongPane.setVgap(9);
 		int row =0; 
-		
-		latLongPane.add(latLongFilterSwitch, 0, row);
-		Label isLatLongFilterLabel = new Label("Filter by Latitude/Longitude");
-		GridPane.setColumnSpan(isLatLongFilterLabel, 3);
-		latLongPane.add(isLatLongFilterLabel, 1, row);
-		row++;
-		
+
 		latLongPane.add(new Label("Latitude Min."), 0, row);
 		latLongPane.add(minLatitudeSpinner, 1, row);
 		latLongPane.add(new Label("Max."), 2, row);
@@ -438,39 +486,70 @@ public class AisDecodeView extends BorderPane {
 		latLongPane.add(new Label("decimal"), 4, row);
 
 		row++; 
-		
+
 		latLongPane.add(new Label("Longitude Min."), 0, row);
 		latLongPane.add(minLongitudeSpinner, 1, row);
 		latLongPane.add(new Label("Max."), 2, row);
 		latLongPane.add(maxLongitudeSpinner, 3, row);
 		latLongPane.add(new Label("decimal"), 4, row);
 
-	
+		/***Change time limits***/
+		VBox timeLimitsPane = new VBox(); 
+		timeLimitsPane.setSpacing(9);
+
+		Label timeFilterLabel = new Label("Date Limits");
+		timeFilterLabel.setTooltip(new Tooltip("Set date limits for exported data. Any data which is \n "
+				+ "outside the date range will not be exported to output files")); 
+		timeFilterLabel.setFont(titleFont);
+
+		timeFilterSwitch = new ToggleSwitch(); 
+		timeFilterSwitch.selectedProperty().addListener((obsval, oldVal, newVal)->{
+			enableControls(); 
+		});
+		timeFilterSwitch.setTooltip(new Tooltip("Select whether to filter AIS data by date. Disable to import \n all AIS data.")); 
+		HBox timeFilterSwitchPane = new HBox(); 
+		timeFilterSwitchPane.setSpacing(5);
+		timeFilterSwitchPane.getChildren().addAll(timeFilterSwitch, timeFilterLabel); 
+
+		datePickerMin = new DatePicker(); 
+		datePickerMin.setPrefWidth(150);
+		datePickerMax = new DatePicker(); 
+		datePickerMax.setPrefWidth(150);
+
+		HBox datePane = new HBox(); 
+		datePane.setSpacing(5);
+		datePane.getChildren().addAll(new Label("From"), datePickerMin, new Label("to"), datePickerMax); 
+		datePane.setAlignment(Pos.CENTER_LEFT);
+
+		timeLimitsPane.getChildren().addAll(timeFilterSwitchPane, datePane); 
+
 		//put all the controls in one pane.
 		advPane.getChildren().addAll(aisExporFieldsLabel, checkComboBox, 
-				maxFileSizePane, latLongFilterLabel, latLongPane); 
+				maxFileSizePane, latLongFilterPane, latLongPane, timeLimitsPane); 
 
 		advPane.setPadding(new Insets(10,10,10,10)); 
 		advPane.setPrefWidth(400);
 		advPane.setMaxWidth(400);
-		
+
 		enableControls();
 
 		return advPane; 
 	}
-	
+
 	/**
 	 * Enable and disable controls based on current settings. 
 	 */
 	private void enableControls() {
-		
+
 		minLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		maxLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		minLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		maxLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
-		
+
+		datePickerMin.setDisable(!timeFilterSwitch.isSelected());
+		datePickerMax.setDisable(!timeFilterSwitch.isSelected());
 	}
-	
+
 	/**
 	 * Get parameters for AIS decode. i.e. get parameters based on the current control values.  
 	 * @param aisParams - the AIS parameters. 
@@ -478,20 +557,58 @@ public class AisDecodeView extends BorderPane {
 	 */
 	public AISDecodeParams getParams(AISDecodeParams aisParams){
 
+		//the import and export folder are set whenever the dialog opens....
+		aisParams.inputDirectory = inputDirectory; 
+		aisParams.outputDirectory = outputDirectory; 
+		
+		//check for non null directories
+		if () {
+			
+		}
+
+		aisParams.fileInputType = this.importChoiceBox.getSelectionModel().getSelectedIndex(); 
+		aisParams.fileOutputType = this.exportChoiceBox.getSelectionModel().getSelectedIndex(); 
+
+		//advanced pane - data output. 
+		for (int i=0; i<AISDataTypes.values().length; i++) {
+			aisParams.outputDataTypes[i] = this.checkComboBox.getCheckModel().isChecked(i); 
+		}
+		aisParams.maxFileSize = this.maxFileSizeSpinner.getValue(); 
+
+		//advanced pane - latitude long filter. 
 		aisParams.minLatitude 	= minLatitudeSpinner.getValue();
 		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
 		aisParams.minLongitude 	= minLatitudeSpinner.getValue();
 		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+		
+		//check whether the latitude and longitude limits make sense
+		if () {
+			
+		}
+
+		//advanced pane time picker
+		//convert to Java millis
+		Instant instant =  datePickerMin.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+		aisParams.minDateTime 	= instant.toEpochMilli(); 
+		instant =  datePickerMax.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+		aisParams.maxDateTime 	= instant.toEpochMilli(); 
+
+		aisParams.isLatLongFilter = this.latLongFilterSwitch.isSelected(); 
+		
+		//check whether the time limtis make sense
+		if () {
+			
+		}
 
 		return aisParams;
 	}
-	
+
 	/**
 	 * Set the controls to a parameter class. 
 	 * @param aisParams - the AIS parameters. 
 	 */
 	public void setParams(AISDecodeParams aisParams){
-		
+
 	}
 
 

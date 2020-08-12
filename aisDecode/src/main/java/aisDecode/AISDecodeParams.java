@@ -25,7 +25,7 @@ public class AISDecodeParams {
 	/**
 	 * The index of the output file type.
 	 */
-	public int fileOutpUtType = 0 ; 
+	public int fileOutputType = 0 ; 
 
 	/**
 	 * The file output directory. 
@@ -41,7 +41,7 @@ public class AISDecodeParams {
 	/**
 	 * The list of AISDataTypes to output. Corresponds to the size of AISDataTypes. 
 	 */
-	public boolean[] outPutDataTypes =  new boolean[AISDataTypes.values().length];
+	public boolean[] outputDataTypes =  new boolean[AISDataTypes.values().length];
 	
 	/**
 	 * Whether to filter measurements bases on latitude and longitude. 
@@ -66,13 +66,28 @@ public class AISDecodeParams {
 	/**
 	 * The maximum longitude in decimal degrees.
 	 */
-	public Double maxLongitude; 
+	public Double maxLongitude;
+	
+	/**
+	 * True of there are date limits
+	 */
+	public boolean isDateLimits = false; 
+
+	/**
+	 * The max date to export data to in millis
+	 */
+	public Long maxDateTime; 
+
+	/**
+	 * The max date to export data to in millis
+	 */
+	public Long minDateTime; 
 
 
 	public AISDecodeParams() {
 		//default is that all AISDataTypes are output
-		for (int i=0; i<outPutDataTypes.length; i++) {
-			outPutDataTypes[i]=true; 
+		for (int i=0; i<outputDataTypes.length; i++) {
+			outputDataTypes[i]=true; 
 		}
 	}
 

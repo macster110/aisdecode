@@ -158,7 +158,7 @@ public class AisDecodeControl {
 
 			AISFileParser importFileParser =  importAISFileTypes.get(aisDecodeParams.fileInputType); 
 
-			AISDataExporter exportAISData =  exportAISFileTypes.get(aisDecodeParams.fileOutpUtType); 
+			AISDataExporter exportAISData =  exportAISFileTypes.get(aisDecodeParams.fileOutputType); 
 
 			//grab the files names.
 			File dir = new File(aisDecodeParams.inputDirectory);
