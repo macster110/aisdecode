@@ -447,7 +447,6 @@ public class AisDecodeView extends BorderPane {
 
 	
 		//put all the controls in one pane.
-		
 		advPane.getChildren().addAll(aisExporFieldsLabel, checkComboBox, 
 				maxFileSizePane, latLongFilterLabel, latLongPane); 
 
@@ -464,10 +463,12 @@ public class AisDecodeView extends BorderPane {
 	 * Enable and disable controls based on current settings. 
 	 */
 	private void enableControls() {
+		
 		minLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		maxLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		minLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
 		maxLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
+		
 	}
 	
 	/**
@@ -476,13 +477,11 @@ public class AisDecodeView extends BorderPane {
 	 * @return parameters with field set form controls. 
 	 */
 	public AISDecodeParams getParams(AISDecodeParams aisParams){
-		
-		
-		
-		aisParams.minLatitude = minLatitudeSpinner.getValue();
-		aisParams.maxLatitude = minLatitudeSpinner.getValue();
-		aisParams.minLongitude = minLatitudeSpinner.getValue();
-		aisParams.maxLatitude = minLatitudeSpinner.getValue();
+
+		aisParams.minLatitude 	= minLatitudeSpinner.getValue();
+		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+		aisParams.minLongitude 	= minLatitudeSpinner.getValue();
+		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
 
 		return aisParams;
 	}
