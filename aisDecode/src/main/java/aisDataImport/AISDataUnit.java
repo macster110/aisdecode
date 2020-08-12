@@ -27,6 +27,13 @@ package aisDataImport;
  */
 public class AISDataUnit {
 	
+	/**
+	 * List of available data types. 
+	 * @author Jamie Macaulay 
+	 *
+	 */
+	public enum AISDataTypes {MMSI, IMO, LATITUDE, LONGITUDE, HEADING,  SOG, COG, ROT, WIDTH, LENGTH, DRAUGHT, VESSEL_NAME, VESSEL_TYPE}
+	
 
 	/**
 	 * Create the AIS data unit. 

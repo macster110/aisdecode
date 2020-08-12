@@ -6,6 +6,8 @@ import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.ToggleSwitch;
 
+import aisDataImport.AISDataUnit.AISDataTypes;
+import aisDecode.AISDecodeParams;
 import aisDecode.AisDecodeControl;
 import aisDecode.AisDecodeControl.AISMessage;
 import aisDecode.AisDecodeControl.RunTask;
@@ -16,8 +18,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -100,6 +104,18 @@ public class AisDecodeView extends BorderPane {
 	 */
 	private Button runButton;
 
+	private Spinner<Double> maxFileSizeSpinner;
+
+	private Spinner<Double> minLatitudeSpinner;
+
+	private Spinner<Double> minLongitudeSpinner;
+
+	private Spinner<Double> maxLatitudeSpinner;
+
+	private Spinner<Double> maxLongitudeSpinner;
+
+	private ToggleSwitch latLongFilterSwitch;
+
 	/**
 	 * Default for headings. 
 	 */
@@ -148,6 +164,7 @@ public class AisDecodeView extends BorderPane {
 
 		//create pop up menu
 		PopOver popOver = new PopOver(); 
+		popOver.setTitle("Advanced Settings");
 		popOver.setCornerRadius(0); 
 		popOver.setContentNode(this.advPane);
 
@@ -331,8 +348,8 @@ public class AisDecodeView extends BorderPane {
 
 
 	/**
-	 * Create
-	 * @return
+	 * Create the advanced menu pane. 
+	 * @return the menu pane. 
 	 */
 	private Pane createAdvMenuPane() {
 
@@ -341,29 +358,141 @@ public class AisDecodeView extends BorderPane {
 
 		Label advLabel = new Label("Advanced Settings"); 
 		advLabel.setFont(titleFont);
+		
+		int spinerWidth = 85; 
+
 
 		appendSwitch = new ToggleSwitch(); 
 
-		HBox appendPane = new HBox(); 
-		appendPane.setSpacing(5);
-		appendPane.setAlignment(Pos.CENTER_RIGHT);
-		Label appnedLabel = new Label("Append"); 
-		//		appnedLabel.setStyle("-fx-font-weight: bold");
+		//appendLabel.setStyle("-fx-font-weight: bold");
+		//appendPane.getChildren().addAll(appendSwitch, appnedLabel); 
 		
-		appendPane.getChildren().addAll(appendSwitch, appnedLabel); 
+		/***Controls for selecting which fields are exported****/
 
 		Label aisExporFieldsLabel = new Label("AIS Export Fields"); 
 		aisExporFieldsLabel.setFont(titleFont);
 		
 		CheckComboBox<String> checkComboBox =  new CheckComboBox<String>(); 
-		checkComboBox.getItems().addAll("TIME", "LATITUDE", "LONGTIDE", "GOG"); 
-		checkComboBox.setPrefWidth(150);
+		for (int i=0; i<AISDataTypes.values().length; i++) {
+			checkComboBox.getItems().add(AISDataTypes.values()[i].toString()); 
+			checkComboBox.getItemBooleanProperty(i).setValue(true);
+		}
+		checkComboBox.getCheckModel().checkAll();
+		checkComboBox.setMaxWidth(Double.POSITIVE_INFINITY);
+		checkComboBox.prefWidthProperty().bind(advPane.widthProperty());
+		
+		/***Settings the maximum files size***/
+		
+		HBox maxFileSizePane = new HBox(); 
+		maxFileSizePane.setSpacing(5);
+		maxFileSizePane.setAlignment(Pos.CENTER_LEFT);
+		Label maxFileSizeLabel = new Label("Max. file size");
+		maxFileSizeSpinner = new Spinner<Double>(10, 5000, this.aisControl.getAisDecodeParams().maxFileSize, 10); 
+		maxFileSizeSpinner.setEditable(true);
+		maxFileSizeSpinner.setPrefWidth(spinerWidth);
+		maxFileSizePane.getChildren().addAll(maxFileSizeLabel, maxFileSizeSpinner, new Label("MB")); 
+		
+		/***Settings limits on the latitude and longitude data to include***/
 
-		advPane.getChildren().addAll(advLabel, appendPane, aisExporFieldsLabel, checkComboBox); 
+		Label latLongFilterLabel = new Label("Latitude/Longitude Limits");
+		latLongFilterLabel.setFont(titleFont);
+		
+		latLongFilterSwitch = new ToggleSwitch(); 
+		latLongFilterSwitch.selectedProperty().addListener((obsval, oldVal, newVal)->{
+			enableControls(); 
+		});
+
+		minLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		minLatitudeSpinner.setPrefWidth(spinerWidth);
+		minLatitudeSpinner.setEditable(true);
+		
+		maxLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		maxLatitudeSpinner.setEditable(true);	
+		maxLatitudeSpinner.setPrefWidth(spinerWidth);
+
+		
+		minLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1);
+		minLongitudeSpinner.setEditable(true);
+		minLongitudeSpinner.setPrefWidth(spinerWidth);
+
+		maxLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		maxLongitudeSpinner.setEditable(true);
+		maxLongitudeSpinner.setPrefWidth(spinerWidth);
+
+
+		GridPane latLongPane = new GridPane(); 
+		latLongPane.setHgap(5);
+		latLongPane.setVgap(10);
+		int row =0; 
+		
+		latLongPane.add(latLongFilterSwitch, 0, row);
+		Label isLatLongFilterLabel = new Label("Filter by Latitude/Longitude");
+		GridPane.setColumnSpan(isLatLongFilterLabel, 3);
+		latLongPane.add(isLatLongFilterLabel, 1, row);
+		row++;
+		
+		latLongPane.add(new Label("Latitude Min."), 0, row);
+		latLongPane.add(minLatitudeSpinner, 1, row);
+		latLongPane.add(new Label("Max."), 2, row);
+		latLongPane.add(maxLatitudeSpinner, 3, row);
+		latLongPane.add(new Label("decimal"), 4, row);
+
+		row++; 
+		
+		latLongPane.add(new Label("Longitude Min."), 0, row);
+		latLongPane.add(minLongitudeSpinner, 1, row);
+		latLongPane.add(new Label("Max."), 2, row);
+		latLongPane.add(maxLongitudeSpinner, 3, row);
+		latLongPane.add(new Label("decimal"), 4, row);
+
+	
+		//put all the controls in one pane.
+		
+		advPane.getChildren().addAll(aisExporFieldsLabel, checkComboBox, 
+				maxFileSizePane, latLongFilterLabel, latLongPane); 
 
 		advPane.setPadding(new Insets(10,10,10,10)); 
+		advPane.setPrefWidth(400);
+		advPane.setMaxWidth(400);
+		
+		enableControls();
 
 		return advPane; 
+	}
+	
+	/**
+	 * Enable and disable controls based on current settings. 
+	 */
+	private void enableControls() {
+		minLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
+		maxLatitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
+		minLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
+		maxLongitudeSpinner.setDisable(!latLongFilterSwitch.isSelected());
+	}
+	
+	/**
+	 * Get parameters for AIS decode. i.e. get parameters based on the current control values.  
+	 * @param aisParams - the AIS parameters. 
+	 * @return parameters with field set form controls. 
+	 */
+	public AISDecodeParams getParams(AISDecodeParams aisParams){
+		
+		
+		
+		aisParams.minLatitude = minLatitudeSpinner.getValue();
+		aisParams.maxLatitude = minLatitudeSpinner.getValue();
+		aisParams.minLongitude = minLatitudeSpinner.getValue();
+		aisParams.maxLatitude = minLatitudeSpinner.getValue();
+
+		return aisParams;
+	}
+	
+	/**
+	 * Set the controls to a parameter class. 
+	 * @param aisParams - the AIS parameters. 
+	 */
+	public void setParams(AISDecodeParams aisParams){
+		
 	}
 
 
