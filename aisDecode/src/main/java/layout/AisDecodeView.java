@@ -33,6 +33,7 @@ import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import jfxtras.styles.jmetro.MDL2IconFont;
+import layout.AISErrorManager.AISErrorMessage;
 
 /**
  * The main interface for the application. 
@@ -156,6 +157,11 @@ public class AisDecodeView extends BorderPane {
 	 */
 	public static int iconSize = 25; //pixels
 
+	/**
+	 * Error manager 
+	 */
+	public AISErrorManager aisErrorManager; 
+
 
 	public AisDecodeView(Stage stage, AisDecodeControl aisControl) {
 		this.aisControl=aisControl;
@@ -242,15 +248,22 @@ public class AisDecodeView extends BorderPane {
 		runButton = new Button(); 
 		runButton.setGraphic(new MDL2IconFont("\uE768"));
 		runButton.setOnAction((action)->{
+
 			if (aisControl.isRunning()) {
 				aisControl.stopAISDecode();
 				//the change of icon is 
 				//start.setGraphic(new MDL2IconFont("\uE768"));
 			}
 			else {
-				aisControl.runAISDecode();
-				//set stop button graphic.
-				runButton.setGraphic(new MDL2IconFont("\uE71A"));
+				//get the new params from the controls. 
+				AISDecodeParams newParams = this.getParams(this.aisControl.getAisDecodeParams()); 
+				if (newParams!=null) {
+					//set the new params in the control. 
+					this.aisControl.setAisDecodeParams(newParams);
+					aisControl.runAISDecode();
+					//set stop button graphic.
+					runButton.setGraphic(new MDL2IconFont("\uE71A"));
+				}
 			}
 		});
 		runButton.setTooltip(new Tooltip("Start importing data from the import folder and exporting to the export folder"));
@@ -555,16 +568,13 @@ public class AisDecodeView extends BorderPane {
 	 * @param aisParams - the AIS parameters. 
 	 * @return parameters with field set form controls. 
 	 */
-	public AISDecodeParams getParams(AISDecodeParams aisParams){
+	public AISDecodeParams getParams(AISDecodeParams aisParamsIn){
+
+		AISDecodeParams aisParams = aisParamsIn.clone(); 
 
 		//the import and export folder are set whenever the dialog opens....
 		aisParams.inputDirectory = inputDirectory; 
 		aisParams.outputDirectory = outputDirectory; 
-		
-		//check for non null directories
-		if () {
-			
-		}
 
 		aisParams.fileInputType = this.importChoiceBox.getSelectionModel().getSelectedIndex(); 
 		aisParams.fileOutputType = this.exportChoiceBox.getSelectionModel().getSelectedIndex(); 
@@ -580,11 +590,6 @@ public class AisDecodeView extends BorderPane {
 		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
 		aisParams.minLongitude 	= minLatitudeSpinner.getValue();
 		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
-		
-		//check whether the latitude and longitude limits make sense
-		if () {
-			
-		}
 
 		//advanced pane time picker
 		//convert to Java millis
@@ -594,13 +599,13 @@ public class AisDecodeView extends BorderPane {
 		aisParams.maxDateTime 	= instant.toEpochMilli(); 
 
 		aisParams.isLatLongFilter = this.latLongFilterSwitch.isSelected(); 
-		
-		//check whether the time limtis make sense
-		if () {
-			
-		}
 
-		return aisParams;
+		AISErrorMessage errorMessage = aisErrorManager.checkParams(aisParams); 
+		if (errorMessage!=null) {
+			aisErrorManager.showErrorDialog(errorMessage);
+			return null; 
+		}
+		else return aisParams;
 	}
 
 	/**

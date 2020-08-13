@@ -3,7 +3,6 @@ package aisDecode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import aisDataImport.AISFile;
 import aisDataImport.AISFileParser;
@@ -59,8 +58,8 @@ public class AisDecodeControl {
 		importAISFileTypes.add(new ImportNMEA()); 
 
 		//export files types
-		exportAISFileTypes.add(new ExportAISMATLAB()); 
-		exportAISFileTypes.add(new ExportAISSQLite()); 
+		exportAISFileTypes.add(new ExportAISMATLAB(this)); 
+		exportAISFileTypes.add(new ExportAISSQLite(this)); 
 
 	}
 
@@ -107,6 +106,7 @@ public class AisDecodeControl {
 
 		System.out.println("Run AIS Decode"); 
 		currentTask  = new RunTask();
+		
 
 		currentTask.setOnSucceeded((a)->{
 			updateMessageListeners(AISMessage.IMPORT_DATA_OVER, currentTask); 
@@ -127,7 +127,6 @@ public class AisDecodeControl {
 		th.setDaemon(true);
 		th.start();
 	}
-
 
 
 	/**
@@ -172,8 +171,11 @@ public class AisDecodeControl {
 				File[] files = dir.listFiles((d, name) -> name.endsWith(importFileParser.getFileType().get(ii)));
 				inputFiles.addAll(Arrays.asList(files)); 
 			}
-
-
+			
+			if (inputFiles.size()==0) {
+				//TODO need to show an error dialog. 
+				return -2;
+			}
 
 			//iterate through each file and parse
 			nfile=0; 

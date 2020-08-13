@@ -10,7 +10,7 @@ import aisDataImport.AISDataUnit.AISDataTypes;
  * @author Jamie Macaulay
  *
  */
-public class AISDecodeParams {
+public class AISDecodeParams implements Cloneable {
 
 	/**
 	 * The file input type.
@@ -31,7 +31,7 @@ public class AISDecodeParams {
 	 * The file output directory. 
 	 */
 	public String outputDirectory = null; 
-	
+
 	/**
 	 * The maximum output file size before another file is created. 
 	 */
@@ -42,7 +42,7 @@ public class AISDecodeParams {
 	 * The list of AISDataTypes to output. Corresponds to the size of AISDataTypes. 
 	 */
 	public boolean[] outputDataTypes =  new boolean[AISDataTypes.values().length];
-	
+
 	/**
 	 * Whether to filter measurements bases on latitude and longitude. 
 	 */
@@ -57,7 +57,7 @@ public class AISDecodeParams {
 	 * The maximum latitude in decimal degrees.
 	 */
 	public Double maxLatitude; 
-	
+
 	/**
 	 * The minimum longitude in decimal degrees.
 	 */
@@ -67,7 +67,7 @@ public class AISDecodeParams {
 	 * The maximum longitude in decimal degrees.
 	 */
 	public Double maxLongitude;
-	
+
 	/**
 	 * True of there are date limits
 	 */
@@ -88,6 +88,23 @@ public class AISDecodeParams {
 		//default is that all AISDataTypes are output
 		for (int i=0; i<outputDataTypes.length; i++) {
 			outputDataTypes[i]=true; 
+		}
+	}
+
+	// Overriding clone() method of Object class
+	public AISDecodeParams clone() {  
+		try {
+			AISDecodeParams params =  (AISDecodeParams) super.clone();
+			//hard copy the array
+			for (int i=0; i<params.outputDataTypes.length; i++) {
+				params.outputDataTypes[i]=outputDataTypes[i]; 
+			}
+			return params; 
+
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;  
 		}
 	}
 
