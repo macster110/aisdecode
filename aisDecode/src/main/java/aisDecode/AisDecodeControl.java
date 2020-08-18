@@ -3,7 +3,10 @@ package aisDecode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import aisDataImport.AISDataUnit;
 import aisDataImport.AISFile;
 import aisDataImport.AISFileParser;
 import aisDataImport.ImportCSVData;
@@ -106,7 +109,7 @@ public class AisDecodeControl {
 
 		System.out.println("Run AIS Decode"); 
 		currentTask  = new RunTask();
-		
+
 
 		currentTask.setOnSucceeded((a)->{
 			updateMessageListeners(AISMessage.IMPORT_DATA_OVER, currentTask); 
@@ -127,6 +130,42 @@ public class AisDecodeControl {
 		th.setDaemon(true);
 		th.start();
 	}
+
+
+	/**
+	 * Filters the data based on option in advanced settings
+	 * @param newData
+	 * @return
+	 */
+	private ArrayList<AISDataUnit> filterData(ArrayList<AISDataUnit> newData) {
+
+		//first check if we need to do anything. Otherwise do not use resources itersting through data units. 
+		if (!aisDecodeParams.isDateLimits && !aisDecodeParams.isLatLongFilter) {
+			return newData; 
+		}
+
+		List<AISDataUnit> filtereddata  = newData;
+
+		if (!aisDecodeParams.isLatLongFilter) {
+			//use the Java stream API to filter latitude and longtide data.
+			filtereddata = newData
+					.stream()
+					.filter(c -> (c.getLongitude() >= aisDecodeParams.minLongitude &&  c.getLongitude() <= aisDecodeParams.maxLongitude 
+					&& c.getLatitude() >= aisDecodeParams.minLatitude && c.getLatitude() <= aisDecodeParams.maxLatitude))
+					.collect(Collectors.toList());
+		}
+
+		if (!aisDecodeParams.isDateLimits) {
+			filtereddata = newData
+					.stream()
+					.filter(c -> (c.getTime() >= aisDecodeParams.minDateTime &&  c.getLongitude() < aisDecodeParams.maxDateTime))
+					.collect(Collectors.toList());
+		}
+
+
+		return (ArrayList<AISDataUnit> ) filtereddata;
+	}
+
 
 
 	/**
@@ -171,7 +210,7 @@ public class AisDecodeControl {
 				File[] files = dir.listFiles((d, name) -> name.endsWith(importFileParser.getFileType().get(ii)));
 				inputFiles.addAll(Arrays.asList(files)); 
 			}
-			
+
 			if (inputFiles.size()==0) {
 				//TODO need to show an error dialog. 
 				return -2;
@@ -183,7 +222,7 @@ public class AisDecodeControl {
 				if (this.isCancelled()) return -1; 
 				importFileParser.parseAISFile(new AISFile(aisFile, (int) nfile, inputFiles.size(), isCancelled), (newData, progressFile, updateMessage)->{
 					//once new data has been parsed send it to the exporter
-					exportAISData.newAISData(newData); 
+					exportAISData.newAISData(filterData(newData)); 
 
 					//the overall progress is the current number of files in plus the fraction of a file of progressFile
 					final double nn = nfile; 

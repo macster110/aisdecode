@@ -111,7 +111,7 @@ public class AisDecodeView extends BorderPane {
 	/**
 	 * Spinner to select the maximum file output size. 
 	 */
-	private Spinner<Double> maxFileSizeSpinner;
+	private Spinner<Integer> maxFileSizeSpinner;
 
 	private Spinner<Double> minLatitudeSpinner;
 
@@ -166,6 +166,7 @@ public class AisDecodeView extends BorderPane {
 	public AisDecodeView(Stage stage, AisDecodeControl aisControl) {
 		this.aisControl=aisControl;
 		this.stage=stage; 
+		this.aisErrorManager=new AISErrorManager(); 
 		this.setCenter(createMainPane());
 		//this.getStyleClass().add(JMetroStyleClass.BACKGROUND);
 		aisControl.addNotifyListener((flag, data)->{
@@ -185,7 +186,9 @@ public class AisDecodeView extends BorderPane {
 		Label headerLabel = new Label("AIS Importer");
 		headerLabel.getStyleClass().add("header");
 		headerLabel.setTooltip(new Tooltip("AIS Importer imports a folder of AIS files and exports to user defined files \n"
-				+ "and also allows for some limited filtering of data types, position and time."));
+				+ "and also allows for some limited filtering of data types, position and time.\n\n"
+				+ "Note: If using with MacOS you must download the Segeo font for icons to appear;\n"
+				+ "https://aka.ms/SegoeFonts"));
 
 
 		Pane importPane = createImportPane();
@@ -309,14 +312,14 @@ public class AisDecodeView extends BorderPane {
 
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 
-		Button fileImportButton = new Button(); 
+		Button fileImportButton = new Button("Folder..."); 
 		fileImportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
 			if (selectedDirectory!=null) {
 				this.inputDirectory = selectedDirectory.getAbsolutePath(); 
 			}
-			inputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().inputDirectory);
-			inputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().inputDirectory));
+			inputFileLabel.setText("Folder: " + this.inputDirectory);
+			inputFileLabel.setTooltip(new Tooltip(this.inputDirectory));
 		});
 
 		HBox.setHgrow(importChoiceBox, Priority.ALWAYS);
@@ -335,7 +338,7 @@ public class AisDecodeView extends BorderPane {
 		importFilePane.getChildren().addAll(importChoiceBox, fileImportButton); 
 		importFilePane.prefWidthProperty().bind(importPane.widthProperty()); 
 
-		importPane.getChildren().addAll(importLabel, importFilePane, inputFileLabel = new Label("File:")); 
+		importPane.getChildren().addAll(importLabel, importFilePane, inputFileLabel = new Label("Folder:")); 
 
 		return importPane;
 	}
@@ -365,14 +368,14 @@ public class AisDecodeView extends BorderPane {
 
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 
-		Button fileExportButton = new Button(); 
+		Button fileExportButton = new Button("Folder..."); 
 		fileExportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
 			if (selectedDirectory!=null) {
 				outputDirectory = selectedDirectory.getAbsolutePath(); 
 			}
-			outputFileLabel.setText("File: " + this.aisControl.getAisDecodeParams().outputDirectory);
-			outputFileLabel.setTooltip(new Tooltip(this.aisControl.getAisDecodeParams().outputDirectory));
+			outputFileLabel.setText("Folder: " + outputDirectory);
+			outputFileLabel.setTooltip(new Tooltip(outputDirectory));
 		});
 
 		HBox.setHgrow(exportChoiceBox, Priority.ALWAYS);
@@ -394,7 +397,7 @@ public class AisDecodeView extends BorderPane {
 		importFilePane.prefWidthProperty().bind(importPane.widthProperty()); 
 
 
-		importPane.getChildren().addAll(exportLabel, importFilePane, outputFileLabel = new Label("File:")); 
+		importPane.getChildren().addAll(exportLabel, importFilePane, outputFileLabel = new Label("Folder:")); 
 		return importPane;
 
 	} 
@@ -440,13 +443,13 @@ public class AisDecodeView extends BorderPane {
 		HBox maxFileSizePane = new HBox(); 
 		maxFileSizePane.setSpacing(5);
 		maxFileSizePane.setAlignment(Pos.CENTER_LEFT);
-		Label maxFileSizeLabel = new Label("Max. file size");
-		maxFileSizeSpinner = new Spinner<Double>(10, 5000, this.aisControl.getAisDecodeParams().maxFileSize, 10); 
+		Label maxFileSizeLabel = new Label("Max. no. AIS recordings per file");
+		maxFileSizeSpinner = new Spinner<Integer>(10, 1000000000, this.aisControl.getAisDecodeParams().maxFileSize, 10); 
 		maxFileSizeSpinner.setEditable(true);
-		maxFileSizeSpinner.setPrefWidth(spinerWidth);
-		maxFileSizePane.getChildren().addAll(maxFileSizeLabel, maxFileSizeSpinner, new Label("MB")); 
+		maxFileSizeSpinner.setPrefWidth(2*spinerWidth);
+		maxFileSizePane.getChildren().addAll(maxFileSizeLabel, maxFileSizeSpinner, new Label(" ")); 
 		maxFileSizeSpinner.setTooltip(new Tooltip("Set the maximum file size. Exported data will be exported as a series of time \n stamped files if "
-				+ "the file size limit is reached. ")); 
+				+ "the number of AIS entries limit is reached. ")); 
 
 		/***Settings limits on the latitude and longitude data to include***/
 
@@ -585,20 +588,27 @@ public class AisDecodeView extends BorderPane {
 		}
 		aisParams.maxFileSize = this.maxFileSizeSpinner.getValue(); 
 
-		//advanced pane - latitude long filter. 
-		aisParams.minLatitude 	= minLatitudeSpinner.getValue();
-		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
-		aisParams.minLongitude 	= minLatitudeSpinner.getValue();
-		aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+		aisParams.isLatLongFilter = this.latLongFilterSwitch.isSelected(); 
+
+		if (aisParams.isLatLongFilter) {
+			//advanced pane - latitude long filter. 
+			aisParams.minLatitude 	= minLatitudeSpinner.getValue();
+			aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+			aisParams.minLongitude 	= minLatitudeSpinner.getValue();
+			aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+		}
 
 		//advanced pane time picker
 		//convert to Java millis
-		Instant instant =  datePickerMin.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
-		aisParams.minDateTime 	= instant.toEpochMilli(); 
-		instant =  datePickerMax.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
-		aisParams.maxDateTime 	= instant.toEpochMilli(); 
+		aisParams.isDateLimits= this.timeFilterSwitch.isSelected(); 
 
-		aisParams.isLatLongFilter = this.latLongFilterSwitch.isSelected(); 
+		if (aisParams.isDateLimits) {
+			Instant instant =  datePickerMin.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+			aisParams.minDateTime 	= instant.toEpochMilli(); 
+			instant =  datePickerMax.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+			aisParams.maxDateTime 	= instant.toEpochMilli(); 
+		}
+
 
 		AISErrorMessage errorMessage = aisErrorManager.checkParams(aisParams); 
 		if (errorMessage!=null) {

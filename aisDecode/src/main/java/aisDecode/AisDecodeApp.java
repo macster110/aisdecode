@@ -26,10 +26,10 @@ public class AisDecodeApp extends Application {
        
        AisDecodeView aisDecodeView = new AisDecodeView(primaryStage, aisDecodeControl); 
        
-              
+ 
        StackPane root = new StackPane();
        root.getChildren().add(aisDecodeView);
-       Scene scene = new Scene(root, 400, 420);
+       Scene scene = new Scene(root, 400, 450);
        primaryStage.setScene(scene);
        
        JMetro jMetro = new JMetro(Style.LIGHT);

@@ -45,12 +45,12 @@ public class AISDataUnit {
 	/**
 	 * The time in millis
 	 */
-	protected long time; 
+	protected Long time; 
 	
 	/**
 	 * The vessel's  Maritime Mobile Service Identity (MMSI) number
 	 */
-	protected int MMSI; 
+	protected Integer MMSI; 
 
 	/**
 	 * The International Maritime Organization (IMO) number.
@@ -60,32 +60,32 @@ public class AISDataUnit {
 	/**
 	 * The latitiude of the vessel in decimal. 
 	 */
-	protected double latitude; 
+	protected Double latitude; 
 
 	/**
 	 * The longitude of the vessel in longitude. 
 	 */
-	protected double longitude; 
+	protected Double longitude; 
 	
 	/**
 	 * The speed over fround in knots 
 	 */
-	protected double SOG; 
+	protected Double SOG; 
 	
 	/**
 	 * The course over ground; a bearing in degrees. 
 	 */
-	protected double COG;
+	protected Double COG;
 	
 	/**
 	 * The width of the vessel in meters
 	 */
-	protected double width;
+	protected Double width;
 	
 	/**
 	 * The length of the vessel in meters
 	 */
-	protected double length; 
+	protected Double length; 
 	
 	/**
 	 * The name of the vessel
@@ -98,13 +98,37 @@ public class AISDataUnit {
 	protected String type;
 
 	/**
-	 * Rate of turn of the vessl.
+	 * Rate of turn of the vessel.
 	 */
-	public double ROT;
+	public Double ROT;
 
-	public double heading;
+	public Double getROT() {
+		return ROT;
+	}
 
-	public double draught;
+	public void setROT(Double rOT) {
+		ROT = rOT;
+	}
+
+	public Double getHeading() {
+		return heading;
+	}
+
+	public void setHeading(Double heading) {
+		this.heading = heading;
+	}
+
+	public Double getDraught() {
+		return draught;
+	}
+
+	public void setDraught(Double draught) {
+		this.draught = draught;
+	}
+
+	public Double heading;
+
+	public Double draught;
 	
 	public long getTime() {
 		return time;
@@ -114,11 +138,11 @@ public class AISDataUnit {
 		this.time = time;
 	}
 
-	public int getMMSI() {
+	public Integer getMMSI() {
 		return MMSI;
 	}
 
-	public void setMMSI(int mMSI) {
+	public void setMMSI(Integer mMSI) {
 		MMSI = mMSI;
 	}
 
@@ -130,51 +154,51 @@ public class AISDataUnit {
 		IMO = iMO;
 	}
 
-	public double getLatitude() {
+	public Double getLatitude() {
 		return latitude;
 	}
 
-	public void setLatitude(double latitude) {
+	public void setLatitude(Double latitude) {
 		this.latitude = latitude;
 	}
 
-	public double getLongitude() {
+	public Double getLongitude() {
 		return longitude;
 	}
 
-	public void setLongitude(double longitude) {
+	public void setLongitude(Double longitude) {
 		this.longitude = longitude;
 	}
 
-	public double getSOG() {
+	public Double getSOG() {
 		return SOG;
 	}
 
-	public void setSOG(double sOG) {
+	public void setSOG(Double sOG) {
 		SOG = sOG;
 	}
 
-	public double getCOG() {
+	public Double getCOG() {
 		return COG;
 	}
 
-	public void setCOG(double cOG) {
+	public void setCOG(Double cOG) {
 		COG = cOG;
 	}
 
-	public double getWidth() {
+	public Double getWidth() {
 		return width;
 	}
 
-	public void setWidth(double width) {
+	public void setWidth(Double width) {
 		this.width = width;
 	}
 
-	public double getLength() {
+	public Double getLength() {
 		return length;
 	}
 
-	public void setLength(double length) {
+	public void setLength(Double length) {
 		this.length = length;
 	}
 

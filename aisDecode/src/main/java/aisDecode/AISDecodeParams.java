@@ -34,8 +34,11 @@ public class AISDecodeParams implements Cloneable {
 
 	/**
 	 * The maximum output file size before another file is created. 
+	 * Note: Originally this was megabytes but it can be very hard to predict the 
+	 * size of a file and doing so can be quite processor intensive so just set to number
+	 * of data units instead for simplicity. 
 	 */
-	public double maxFileSize = 200; //MB 
+	public int maxFileSize = 2000000; //number entries
 
 
 	/**

@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import aisDecode.AISDataListener;
+import aisDecode.AISDecodeUtils;
 import javafx.scene.control.ProgressBar;
 
 /**
@@ -183,9 +184,7 @@ public class ImportCSVData implements AISFileParser {
 	 * @throws ParseException 
 	 */
 	private static long dateString2Millis(String dateString) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-		Date date = sdf.parse(dateString.trim());
-		return date.getTime(); 
+		return AISDecodeUtils.dateString2Millis( dateString, "dd/MM/yyyy hh:mm:ss"); 
 	} 
 
 	/**
