@@ -14,6 +14,8 @@ import aisDecode.AisDecodeControl;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import jfxtras.styles.jmetro.FlatDialog;
+import jfxtras.styles.jmetro.JMetro;
 
 /**
  * Export AIS to an SQLite database. 
@@ -25,18 +27,29 @@ import javafx.scene.control.Dialog;
  *
  */
 public class ExportAISSQLite implements AISDataExporter {
-	
+
 	/**
 	 * The current database file
 	 */
-	String databaseName; 
-	
+	private String databaseName; 
+
 	/**
 	 * The current database file 
 	 */
-	Connection currentConnection; 
+	private Connection currentConnection;
 	
+	/**
+	 * The current count. 
+	 */
+	private int count = 0; 
+
 	
+	/**
+	 * Use the maximum file size limit if true. Otherwise add everything to the database. 
+	 */
+	private boolean useMaxFileSize = false; 
+
+
 
 	public ExportAISSQLite(AisDecodeControl aisDecodeControl) {
 		// TODO Auto-generated constructor stub
@@ -49,79 +62,82 @@ public class ExportAISSQLite implements AISDataExporter {
 
 	@Override
 	public void newAISData(ArrayList<AISDataUnit> newData) {
+		
 		checkDatabase(); 
+		
+		
 	}
-	
-	
+
+
 	/**
 	 * Check the database exists and whether we need to create a new one
 	 */
 	public void checkDatabase() {
-		// check the database. 
+		// check the database connection exists. 
 		
-		
+
 	}
-	
-    /**
-     * Create a new table in the test database
-     *
-     */
-    public static void createNewTable(String fileName) {
-        // SQLite connection string
-		String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
-        
-        // SQL statement for creating a new table
-        String sql = "CREATE TABLE IF NOT EXISTS warehouses (\n"
-                + "	id integer PRIMARY KEY,\n"
-                + "	name text NOT NULL,\n"
-                + "	capacity real\n"
-                + ");";
-        
-        try (Connection conn = DriverManager.getConnection(url);
-                Statement stmt = conn.createStatement()) {
-            // create a new table
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-	
-    /**
-     * Insert a new row into the warehouses table
-     *
-     * @param name
-     * @param capacity
-     */
-    public void insert(String fileName, String name, double capacity) {
-        String sql = "INSERT INTO warehouses(name,capacity) VALUES(?,?)";
 
-        try (Connection conn = this.connect(fileName);
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setDouble(2, capacity);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-    
-
-    /**
-     * Connect to the test.db database
-     *
-     * @return the Connection object
-     */
-    private Connection connect(String fileName) {
-        // SQLite connection string
+	/**
+	 * Create a new table in the test database
+	 *
+	 */
+	public static void createNewTable(String fileName) {
+		// SQLite connection string
 		String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return conn;
-    }
+
+		// SQL statement for creating a new table
+		String sql = "CREATE TABLE IF NOT EXISTS warehouses (\n"
+				+ "	id integer PRIMARY KEY,\n"
+				+ "	name text NOT NULL,\n"
+				+ "	capacity real\n"
+				+ ");";
+
+		try (Connection conn = DriverManager.getConnection(url);
+				Statement stmt = conn.createStatement()) {
+			// create a new table
+			stmt.execute(sql);
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	/**
+	 * Insert a new row into the warehouses table
+	 *
+	 * @param name
+	 * @param capacity
+	 */
+	public void insert(String fileName, String name, double capacity) {
+		String sql = "INSERT INTO warehouses(name,capacity) VALUES(?,?)";
+
+		try (Connection conn = this.connect(fileName);
+				PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setString(1, name);
+			pstmt.setDouble(2, capacity);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+
+	/**
+	 * Connect to the test.db database
+	 *
+	 * @return the Connection object
+	 */
+	private Connection connect(String fileName) {
+		// SQLite connection string
+		String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
+		Connection conn = null;
+		try {
+			conn = DriverManager.getConnection(url);
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		return conn;
+	}
 
 	/**
 	 * Connect to a sample database
@@ -153,12 +169,31 @@ public class ExportAISSQLite implements AISDataExporter {
 
 	@Override
 	public void preCheck(AISDecodeParams params) {
-		 ButtonType yesButtonType = new ButtonType("Yes", ButtonData.OK_DONE);
-		 ButtonType nobuttonType = new ButtonType("Yes", ButtonData.OK_DONE);
+		ButtonType yesButtonType = new ButtonType("Yes", ButtonData.OK_DONE);
+		ButtonType nobuttonType = new ButtonType("No", ButtonData.CANCEL_CLOSE);
 
-		 Dialog<String> dialog = new Dialog<>();
-		 dialog.getDialogPane().getButtonTypes().addAll(yesButtonType, nobuttonType);
+		FlatDialog<ButtonType> dialog = new FlatDialog<>();
+		JMetro jMetro = new JMetro(); 
+		jMetro.setScene(dialog.getDialogPane().getScene());
 		
+		
+		dialog.getDialogPane().getButtonTypes().addAll(yesButtonType, nobuttonType);
+		dialog.setContentText("SQLite databases can be over 200TB in size.\n"
+							+ "Do you wish to disable the current maximum \n"
+							+ "file limit of " + params.maxFileSize +" AIS data points?\n"
+							+ "Data will be appended to a database if it exists\n"
+							+ "within the selected folder. ");
+
+		dialog.showAndWait().ifPresent(response -> {
+			if (response == ButtonType.OK) {
+				//System.out.println("Dialog response: " + response);
+				useMaxFileSize = false; 
+			}
+			else {
+				useMaxFileSize = true; 
+			}
+		});
+
 	}
 
 

@@ -109,6 +109,9 @@ public class AisDecodeControl {
 
 		System.out.println("Run AIS Decode"); 
 		currentTask  = new RunTask();
+		
+		//perform any pre-checks
+		exportAISFileTypes.get(aisDecodeParams.fileOutputType).preCheck(aisDecodeParams);
 
 
 		currentTask.setOnSucceeded((a)->{
@@ -193,49 +196,57 @@ public class AisDecodeControl {
 
 		@Override 
 		protected Integer call() throws Exception {
+			
+			try {
+				AISFileParser importFileParser =  importAISFileTypes.get(aisDecodeParams.fileInputType); 
 
-			AISFileParser importFileParser =  importAISFileTypes.get(aisDecodeParams.fileInputType); 
-
-			AISDataExporter exportAISData =  exportAISFileTypes.get(aisDecodeParams.fileOutputType); 
-
-			//grab the files names.
-			File dir = new File(aisDecodeParams.inputDirectory);
+				AISDataExporter exportAISData =  exportAISFileTypes.get(aisDecodeParams.fileOutputType); 
 
 
-			//get a list of all the files with appropriate extensions. 
-			ArrayList<File> inputFiles = new ArrayList<File>(); 
-			for (int i=0; i<importFileParser.getFileType().size(); i++) {
-				if (this.isCancelled()) return -1; 
-				final int ii = i; 
-				File[] files = dir.listFiles((d, name) -> name.endsWith(importFileParser.getFileType().get(ii)));
-				inputFiles.addAll(Arrays.asList(files)); 
+				//grab the files names.
+				File dir = new File(aisDecodeParams.inputDirectory);
+
+
+				//get a list of all the files with appropriate extensions. 
+				ArrayList<File> inputFiles = new ArrayList<File>(); 
+				for (int i=0; i<importFileParser.getFileType().size(); i++) {
+					if (this.isCancelled()) return -1; 
+					final int ii = i; 
+					File[] files = dir.listFiles((d, name) -> name.endsWith(importFileParser.getFileType().get(ii)));
+					inputFiles.addAll(Arrays.asList(files)); 
+				}
+
+				if (inputFiles.size()==0) {
+					//TODO need to show an error dialog. 
+					return -2;
+				}
+
+				//iterate through each file and parse
+				nfile=0; 
+				for (File aisFile: inputFiles) {
+					if (this.isCancelled()) return -1; 
+					importFileParser.parseAISFile(new AISFile(aisFile, (int) nfile, inputFiles.size(), isCancelled), (newData, progressFile, updateMessage)->{
+						//once new data has been parsed send it to the exporter
+						exportAISData.newAISData(filterData(newData)); 
+
+						//the overall progress is the current number of files in plus the fraction of a file of progressFile
+						final double nn = nfile; 
+
+						System.out.println("Progress: " + nn+progressFile); 
+
+						updateProgress(nn+progressFile, inputFiles.size()); 
+						updateMessage(updateMessage); 
+					});
+					nfile=nfile+1.0; 
+				}
+
+				return 1; 
+
 			}
-
-			if (inputFiles.size()==0) {
-				//TODO need to show an error dialog. 
-				return -2;
+			catch (Exception e) {
+				e.printStackTrace();
+				return 1;
 			}
-
-			//iterate through each file and parse
-			nfile=0; 
-			for (File aisFile: inputFiles) {
-				if (this.isCancelled()) return -1; 
-				importFileParser.parseAISFile(new AISFile(aisFile, (int) nfile, inputFiles.size(), isCancelled), (newData, progressFile, updateMessage)->{
-					//once new data has been parsed send it to the exporter
-					exportAISData.newAISData(filterData(newData)); 
-
-					//the overall progress is the current number of files in plus the fraction of a file of progressFile
-					final double nn = nfile; 
-
-					System.out.println("Progress: " + nn+progressFile); 
-
-					updateProgress(nn+progressFile, inputFiles.size()); 
-					updateMessage(updateMessage); 
-				});
-				nfile=nfile+1.0; 
-			}
-
-			return 1; 
 		}
 
 		@Override protected void cancelled() {
