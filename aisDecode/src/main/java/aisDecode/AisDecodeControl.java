@@ -26,6 +26,11 @@ import javafx.concurrent.Task;
  */
 public class AisDecodeControl {
 
+	/**
+	 * 
+	 * @author Jamie Macaulay
+	 *
+	 */
 	public enum AISMessage {IMPORT_DATA_START, IMPORT_DATA_OVER, IMPORT_DATA_CANCELLED, IMPORT_DATA_ERROR}
 
 	/**

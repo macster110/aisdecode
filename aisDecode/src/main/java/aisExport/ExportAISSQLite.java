@@ -1,5 +1,6 @@
 package aisExport;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -9,6 +10,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import aisDataImport.AISDataUnit;
+import aisDataImport.AISDataUnit.AISDataTypes;
 import aisDecode.AISDecodeParams;
 import aisDecode.AisDecodeControl;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -29,6 +31,11 @@ import jfxtras.styles.jmetro.JMetro;
 public class ExportAISSQLite implements AISDataExporter {
 
 	/**
+	 * The nam eof the ais table
+	 */
+	public final static String AIS_TABLE_NAME  = "AIS_data"; 
+
+	/**
 	 * The current database file
 	 */
 	private String databaseName; 
@@ -37,22 +44,27 @@ public class ExportAISSQLite implements AISDataExporter {
 	 * The current database file 
 	 */
 	private Connection currentConnection;
-	
+
 	/**
 	 * The current count. 
 	 */
 	private int count = 0; 
 
-	
+
 	/**
 	 * Use the maximum file size limit if true. Otherwise add everything to the database. 
 	 */
-	private boolean useMaxFileSize = false; 
+	private boolean useMaxFileSize = false;
+
+	/**
+	 * The AIS decode control
+	 */
+	private AisDecodeControl aisDecodeControl; 
 
 
 
 	public ExportAISSQLite(AisDecodeControl aisDecodeControl) {
-		// TODO Auto-generated constructor stub
+		this.aisDecodeControl=aisDecodeControl; 
 	}
 
 	@Override
@@ -62,10 +74,14 @@ public class ExportAISSQLite implements AISDataExporter {
 
 	@Override
 	public void newAISData(ArrayList<AISDataUnit> newData) {
-		
+
+		//check the database exists. 
 		checkDatabase(); 
-		
-		
+
+		for (int i=0; i<newData.size(); i++) {
+			insert(newData.get(i)); 
+		}
+
 	}
 
 
@@ -74,7 +90,29 @@ public class ExportAISSQLite implements AISDataExporter {
 	 */
 	public void checkDatabase() {
 		// check the database connection exists. 
-		
+		if (currentConnection == null) {
+			//if the database does not exist try and find a database in the current folder. 
+
+			//grab the files names.
+			File dir = new File(aisDecodeControl.getAisDecodeParams().inputDirectory);
+
+			//check that the table exists. 
+			File[] files = dir.listFiles((d, name) -> name.endsWith(".sqlite3"));
+
+			String file;
+			if (files!=null && files.length>0) {
+				//if there is more than one file then use the first file. 
+				file = files[0].getPath(); 
+			}
+			else {
+				file = aisDecodeControl.getAisDecodeParams().outputDirectory +  "\\ais_database.sqlite3";
+				createNewDatabase(file); 
+			}
+			currentConnection = connect( file); 
+		}
+
+		//now there is a connection, check that the database contains the correct table. 
+		createNewTable(); 
 
 	}
 
@@ -82,19 +120,28 @@ public class ExportAISSQLite implements AISDataExporter {
 	 * Create a new table in the test database
 	 *
 	 */
-	public static void createNewTable(String fileName) {
-		// SQLite connection string
-		String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
+	public void createNewTable() {
 
 		// SQL statement for creating a new table
-		String sql = "CREATE TABLE IF NOT EXISTS warehouses (\n"
+		String sql = "CREATE TABLE IF NOT EXISTS "+AIS_TABLE_NAME+" (\n"
 				+ "	id integer PRIMARY KEY,\n"
-				+ "	name text NOT NULL,\n"
-				+ "	capacity real\n"
+				+ "	MMSI integer\n"
+				+ "	IMO text\n"
+				+ "	LATITUDE real\n"
+				+ "	LONGITUDE real\n"
+				+ "	HEADING real\n"
+				+ "	SOG real\n"
+				+ "	COG real\n"
+				+ "	ROT real\n"
+				+ "	WIDTH real\n"
+				+ "	LENGTH real\n"
+				+ "	DRAUGHHT real\n"
+				+ "	VESSEL_NAME text\n"
+				+ "	VESSEL_TYPE text\n"
 				+ ");";
 
-		try (Connection conn = DriverManager.getConnection(url);
-				Statement stmt = conn.createStatement()) {
+		try {
+			Statement stmt = currentConnection.createStatement();
 			// create a new table
 			stmt.execute(sql);
 		} catch (SQLException e) {
@@ -103,18 +150,64 @@ public class ExportAISSQLite implements AISDataExporter {
 	}
 
 	/**
-	 * Insert a new row into the warehouses table
+	 * Insert AIS data into the table. 
 	 *
 	 * @param name
 	 * @param capacity
 	 */
-	public void insert(String fileName, String name, double capacity) {
-		String sql = "INSERT INTO warehouses(name,capacity) VALUES(?,?)";
+	public void insert(AISDataUnit aisDataUnit) {
+		String sql = "INSERT INTO "+AIS_TABLE_NAME+"(name,capacity) VALUES(?,?)";
 
-		try (Connection conn = this.connect(fileName);
-				PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setString(1, name);
-			pstmt.setDouble(2, capacity);
+		try {
+			PreparedStatement pstmt = currentConnection.prepareStatement(sql);
+
+			for (int i=0; i<AISDataTypes.values().length; i++) {
+				switch (AISDataTypes.values()[i]) {
+				case COG:
+					pstmt.setDouble(7, aisDataUnit.getCOG());
+					break;
+				case DRAUGHT:
+					pstmt.setDouble(10, aisDataUnit.getDraught());
+					break;
+				case HEADING:
+					pstmt.setDouble(5, aisDataUnit.getHeading());
+					break;
+				case IMO:
+					pstmt.setString(2, aisDataUnit.getIMO());
+					break;
+				case LATITUDE:
+					pstmt.setDouble(3, aisDataUnit.getLatitude());
+					break;
+				case LENGTH:
+					pstmt.setDouble(9, aisDataUnit.getLength());
+					break;
+				case LONGITUDE:
+					pstmt.setDouble(4, aisDataUnit.getLongitude());
+					break;
+				case MMSI:
+					pstmt.setDouble(1, aisDataUnit.getMMSI());
+					break;
+				case ROT:
+					pstmt.setDouble(7, aisDataUnit.getROT());
+					break;
+				case SOG:
+					pstmt.setDouble(6, aisDataUnit.getSOG());
+					break;
+				case VESSEL_NAME:
+					pstmt.setString(11, aisDataUnit.getName());
+					break;
+				case VESSEL_TYPE:
+					pstmt.setString(12, aisDataUnit.getType());
+					break;
+				case WIDTH:
+					pstmt.setDouble(8, aisDataUnit.getWidth());
+					break;
+				default:
+					break;
+
+				}
+
+			}
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
@@ -146,7 +239,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	 */
 	public static void createNewDatabase(String fileName) {
 
-		String url = "jdbc:sqlite:C:/sqlite/db/" + fileName;
+		String url = "jdbc:sqlite:" + fileName;
 
 		try (Connection conn = DriverManager.getConnection(url)) {
 			if (conn != null) {
@@ -160,12 +253,6 @@ public class ExportAISSQLite implements AISDataExporter {
 		}
 	}
 
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String[] args) {
-		createNewDatabase("test.db");
-	}
 
 	@Override
 	public void preCheck(AISDecodeParams params) {
@@ -175,26 +262,29 @@ public class ExportAISSQLite implements AISDataExporter {
 		FlatDialog<ButtonType> dialog = new FlatDialog<>();
 		JMetro jMetro = new JMetro(); 
 		jMetro.setScene(dialog.getDialogPane().getScene());
-		
-		
+
+
 		dialog.getDialogPane().getButtonTypes().addAll(yesButtonType, nobuttonType);
 		dialog.setContentText("SQLite databases can be over 200TB in size.\n"
-							+ "Do you wish to disable the current maximum \n"
-							+ "file limit of " + params.maxFileSize +" AIS data points?\n"
-							+ "Data will be appended to a database if it exists\n"
-							+ "within the selected folder. ");
+				+ "The maximum file limit will be disabled and AIS\n"
+				+ "data will be appended to a single database if it exists\n"
+				+ "within the selected folder. ");
 
 		dialog.showAndWait().ifPresent(response -> {
 			if (response == ButtonType.OK) {
-				//System.out.println("Dialog response: " + response);
-				useMaxFileSize = false; 
-			}
-			else {
-				useMaxFileSize = true; 
+
 			}
 		});
 
 	}
+	
+	
+	   /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+    	 createNewDatabase("/Users/au671271/Desktop/test.sqlite3"); 
+    }
 
 
 }

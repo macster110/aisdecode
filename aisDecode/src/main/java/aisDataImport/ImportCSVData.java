@@ -149,11 +149,15 @@ public class ImportCSVData implements AISFileParser {
 			aisDataUnit.heading   		= doubleValue(data[9]); 
 
 			aisDataUnit.IMO   			= data[10]; 
+			
+	
 
 			String callsign   		= data[11]; 
 			String shipType   		= data[12]; 
 			String cargoType   		= data[10]; 
-
+			
+			aisDataUnit.name			= callsign;
+			aisDataUnit.type			= shipType;
 			//ship size
 			aisDataUnit.width   		= doubleValue(data[15]); 
 			aisDataUnit.length   		= doubleValue(data[16]); 
