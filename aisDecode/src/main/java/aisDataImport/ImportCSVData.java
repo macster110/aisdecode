@@ -73,9 +73,13 @@ public class ImportCSVData implements AISFileParser {
 					csvReader.close();
 					return; 
 				}
-
+				
 				count++; 
 
+				if (count==1) {
+					continue; //do not read header. 
+				}
+				
 				aisDataUnit  = parseCSVLine(row); 
 				if (aisDataUnit!=null) {
 					aisDataUnits.add(aisDataUnit); 

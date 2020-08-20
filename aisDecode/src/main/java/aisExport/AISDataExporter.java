@@ -6,7 +6,8 @@ import aisDataImport.AISDataUnit;
 import aisDecode.AISDecodeParams;
 
 /** 
- * Interface for saving AIS data to a file type. e.g. AQLIte, .MAT
+ * Interface for saving AIS data to a file type. e.g. SQLIte, .MAT
+ * 
  * @author Jamie Macaulay
  *
  */
@@ -29,5 +30,18 @@ public interface AISDataExporter {
 	 * @param params - the parameters to check. 
 	 */
 	public void preCheck(AISDecodeParams params);
+	
+	/**
+	 * The type of file that th data is exported to e.g. ".mat", .sqlite3
+	 */
+	public String exportFileType(); 
+	
+	/**
+	 * True to export to a folder where the algorithm decides how many files to create. 
+	 * Otherwise exports to a single file. 
+	 * @return the file to export to
+	 */
+	public boolean isExport2Folder(); 
+
 
 }

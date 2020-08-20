@@ -8,11 +8,14 @@ import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.ToggleSwitch;
 
+import com.sun.javafx.tk.FileChooserType;
+
 import aisDataImport.AISDataUnit.AISDataTypes;
 import aisDecode.AISDecodeParams;
 import aisDecode.AisDecodeControl;
 import aisDecode.AisDecodeControl.AISMessage;
 import aisDecode.AisDecodeControl.RunTask;
+import aisExport.AISDataExporter;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -31,6 +34,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import jfxtras.styles.jmetro.MDL2IconFont;
 import layout.AISErrorManager.AISErrorMessage;
@@ -305,6 +310,7 @@ public class AisDecodeView extends BorderPane {
 		importChoiceBox = new ChoiceBox<String>(); 
 		for (int i=0; i<aisControl.getAISFileParsers().size(); i++) {
 			importChoiceBox.getItems().add(aisControl.getAISFileParsers().get(i).getName());
+
 		}
 		importChoiceBox.getSelectionModel().select(0);
 		importChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
@@ -313,6 +319,8 @@ public class AisDecodeView extends BorderPane {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 
 		Button fileImportButton = new Button("Folder..."); 
+		fileImportButton.setPrefWidth(90);
+
 		fileImportButton.setOnAction(e -> {
 			File selectedDirectory = directoryChooser.showDialog(stage);
 			if (selectedDirectory!=null) {
@@ -356,7 +364,43 @@ public class AisDecodeView extends BorderPane {
 		exportLabel.setFont(titleFont);
 		exportLabel.setTooltip(new Tooltip("Select the type of file to save AIS to and the directory to export to.")); 
 
+
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		FileChooser fileChooser = new FileChooser();
+
+		Button fileExportButton = new Button("Folder..."); 
+		fileExportButton.setPrefWidth(90);
+		fileExportButton.setOnAction(e -> {
+			AISDataExporter aisDataExporter = aisControl.getAISDataExporters().get(exportChoiceBox.getSelectionModel().getSelectedIndex()); 
+			if (aisDataExporter.isExport2Folder()) {
+				//select a folder. 
+				File selectedDirectory = directoryChooser.showDialog(stage);
+				directoryChooser.setTitle("Select AIS Export Folder");
+				if (selectedDirectory!=null) {
+					outputDirectory = selectedDirectory.getAbsolutePath(); 
+				}
+				outputFileLabel.setText("Folder: " + outputDirectory);
+
+			}
+			else {
+				
+				//select a file. 
+				fileChooser.getExtensionFilters().addAll(
+				         new ExtensionFilter("AIS Export File", "*"+aisDataExporter.exportFileType()));
+				File selectedFile = fileChooser.showSaveDialog(stage);
+				fileChooser.setTitle("Select AIS Export " + aisDataExporter.exportFileType() + " file");
+				if (selectedFile!=null) {
+					outputDirectory = selectedFile.getAbsolutePath(); 
+				}
+				outputFileLabel.setText("File: " + outputDirectory);
+
+			}
+			outputFileLabel.setTooltip(new Tooltip(outputDirectory));
+		});
+
+
 		exportChoiceBox = new ChoiceBox<String>(); 
+		
 		for (int i=0; i<aisControl.getAISDataExporters().size(); i++) {
 			exportChoiceBox.getItems().add(aisControl.getAISDataExporters().get(i).getName());
 
@@ -364,19 +408,16 @@ public class AisDecodeView extends BorderPane {
 		exportChoiceBox.getSelectionModel().select(0);
 		exportChoiceBox.setMaxWidth(Double.POSITIVE_INFINITY);
 		exportChoiceBox.setTooltip(new Tooltip("Select the type of file to export data to.")); 
-
-
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-
-		Button fileExportButton = new Button("Folder..."); 
-		fileExportButton.setOnAction(e -> {
-			File selectedDirectory = directoryChooser.showDialog(stage);
-			if (selectedDirectory!=null) {
-				outputDirectory = selectedDirectory.getAbsolutePath(); 
+		exportChoiceBox.setOnAction((action)->{
+			if (aisControl.getAISDataExporters().get(exportChoiceBox.getSelectionModel().getSelectedIndex()).isExport2Folder()) {
+				fileExportButton.setText("Folder...");
+			} 
+			else {
+				fileExportButton.setText("File...");
 			}
-			outputFileLabel.setText("Folder: " + outputDirectory);
-			outputFileLabel.setTooltip(new Tooltip(outputDirectory));
 		});
+
+  
 
 		HBox.setHgrow(exportChoiceBox, Priority.ALWAYS);
 

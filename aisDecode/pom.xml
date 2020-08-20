@@ -139,12 +139,6 @@
 			<artifactId>matfilerw</artifactId>
 			<version>3.0.1</version>
 		</dependency>
-		<!-- The main UI them JMetro -->
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jmetro</artifactId>
-			<version>11.6.9</version>
-		</dependency>
 		<!-- MATLAB file import and export -->
 		<dependency>
 			<groupId>us.hebi.matlab.mat</groupId>

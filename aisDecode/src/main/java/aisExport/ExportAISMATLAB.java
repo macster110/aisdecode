@@ -171,6 +171,16 @@ public class ExportAISMATLAB implements AISDataExporter {
 		
 	}
 
+	@Override
+	public String exportFileType() {
+		return ".mat";
+	}
+
+	@Override
+	public boolean isExport2Folder() {
+		return true;
+	}
+
 //	/**
 //	 * Test the matlab
 //	 * @param arg
