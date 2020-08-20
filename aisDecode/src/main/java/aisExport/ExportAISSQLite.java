@@ -38,10 +38,6 @@ public class ExportAISSQLite implements AISDataExporter {
 	private static String sql = "INSERT INTO "+AIS_TABLE_NAME+"(MMSI,IMO, LATITUDE, LONGITUDE, HEADING, SOG, COG, ROT, WIDTH, LENGTH, DRAUGHHT, VESSEL_NAME, VESSEL_TYPE) "
 			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-	/**
-	 * The current database file
-	 */
-	private String databaseName; 
 
 	/**
 	 * The current database file 
@@ -53,11 +49,6 @@ public class ExportAISSQLite implements AISDataExporter {
 	 */
 	private int count = 0; 
 
-
-	/**
-	 * Use the maximum file size limit if true. Otherwise add everything to the database. 
-	 */
-	private boolean useMaxFileSize = false;
 
 	/**
 	 * The AIS decode control
@@ -276,25 +267,25 @@ public class ExportAISSQLite implements AISDataExporter {
 
 	@Override
 	public void preCheck(AISDecodeParams params) {
-		ButtonType yesButtonType = new ButtonType("Yes", ButtonData.OK_DONE);
-		ButtonType nobuttonType = new ButtonType("No", ButtonData.CANCEL_CLOSE);
-
-		FlatDialog<ButtonType> dialog = new FlatDialog<>();
-		JMetro jMetro = new JMetro(); 
-		jMetro.setScene(dialog.getDialogPane().getScene());
-
-
-		dialog.getDialogPane().getButtonTypes().addAll(yesButtonType, nobuttonType);
-		dialog.setContentText("SQLite databases can be over 200TB in size.\n"
-				+ "The maximum file limit will be disabled and AIS\n"
-				+ "data will be appended to a single database if it exists\n"
-				+ "within the selected folder. ");
-
-		dialog.showAndWait().ifPresent(response -> {
-			if (response == ButtonType.OK) {
-
-			}
-		});
+//		ButtonType yesButtonType = new ButtonType("Yes", ButtonData.OK_DONE);
+//		ButtonType nobuttonType = new ButtonType("No", ButtonData.CANCEL_CLOSE);
+//
+//		FlatDialog<ButtonType> dialog = new FlatDialog<>();
+//		JMetro jMetro = new JMetro(); 
+//		jMetro.setScene(dialog.getDialogPane().getScene());
+//
+//
+//		dialog.getDialogPane().getButtonTypes().addAll(yesButtonType, nobuttonType);
+//		dialog.setContentText("SQLite databases can be over 200TB in size.\n"
+//				+ "The maximum file limit will be disabled and AIS\n"
+//				+ "data will be appended to a single database if it exists\n"
+//				+ "within the selected folder. ");
+//
+//		dialog.showAndWait().ifPresent(response -> {
+//			if (response == ButtonType.OK) {
+//
+//			}
+//		});
 
 	}
 
