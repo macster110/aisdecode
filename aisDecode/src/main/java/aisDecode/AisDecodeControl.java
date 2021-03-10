@@ -34,7 +34,7 @@ public class AisDecodeControl {
 	public enum AISMessage {IMPORT_DATA_START, IMPORT_DATA_OVER, IMPORT_DATA_CANCELLED, IMPORT_DATA_ERROR}
 
 	/**
-	 * The parameters for AIS data import e.g. import, expoert files.
+	 * The parameters for AIS data import e.g. import, export files.
 	 */
 	AISDecodeParams aisDecodeParams = new AISDecodeParams(); 
 
@@ -112,7 +112,7 @@ public class AisDecodeControl {
 	 */
 	public void runAISDecode() {
 
-		System.out.println("Run AIS Decode"); 
+//		System.out.println("Run AIS Decode"); 
 		currentTask  = new RunTask();
 		
 		//perform any pre-checks
@@ -134,6 +134,8 @@ public class AisDecodeControl {
 
 		updateMessageListeners(AISMessage.IMPORT_DATA_START, currentTask); 
 
+//		System.out.println("Run AIS Decode 2"); 
+
 		Thread th = new Thread(currentTask);
 		th.setDaemon(true);
 		th.start();
@@ -146,15 +148,17 @@ public class AisDecodeControl {
 	 * @return
 	 */
 	private ArrayList<AISDataUnit> filterData(ArrayList<AISDataUnit> newData) {
+		
+		if (newData == null) return null; 
 
-		//first check if we need to do anything. Otherwise do not use resources itersting through data units. 
+		//first check if we need to do anything. Otherwise do not use resources iterating through data units. 
 		if (!aisDecodeParams.isDateLimits && !aisDecodeParams.isLatLongFilter) {
 			return newData; 
 		}
 
 		List<AISDataUnit> filtereddata  = newData;
 
-		if (!aisDecodeParams.isLatLongFilter) {
+		if (aisDecodeParams.isLatLongFilter) {
 			//use the Java stream API to filter latitude and longtide data.
 			filtereddata = newData
 					.stream()
@@ -163,7 +167,7 @@ public class AisDecodeControl {
 					.collect(Collectors.toList());
 		}
 
-		if (!aisDecodeParams.isDateLimits) {
+		if (aisDecodeParams.isDateLimits) {
 			filtereddata = newData
 					.stream()
 					.filter(c -> (c.getTime() >= aisDecodeParams.minDateTime &&  c.getLongitude() < aisDecodeParams.maxDateTime))
@@ -203,6 +207,9 @@ public class AisDecodeControl {
 		protected Integer call() throws Exception {
 			
 			try {
+				
+				System.out.println("Start AIS import frame"); 
+				
 				AISFileParser importFileParser =  importAISFileTypes.get(aisDecodeParams.fileInputType); 
 
 				AISDataExporter exportAISData =  exportAISFileTypes.get(aisDecodeParams.fileOutputType); 

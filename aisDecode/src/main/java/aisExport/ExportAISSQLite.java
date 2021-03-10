@@ -12,10 +12,6 @@ import aisDataImport.AISDataUnit;
 import aisDataImport.AISDataUnit.AISDataTypes;
 import aisDecode.AISDecodeParams;
 import aisDecode.AisDecodeControl;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import jfxtras.styles.jmetro.FlatDialog;
-import jfxtras.styles.jmetro.JMetro;
 
 /**
  * Export AIS to an SQLite database. 
@@ -56,7 +52,6 @@ public class ExportAISSQLite implements AISDataExporter {
 	private AisDecodeControl aisDecodeControl; 
 
 
-
 	public ExportAISSQLite(AisDecodeControl aisDecodeControl) {
 		this.aisDecodeControl=aisDecodeControl; 
 	}
@@ -93,7 +88,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	 */
 	public void checkDatabase() {
 		// check the database connection exists. 
-		System.out.println("CurrentConnection:" +  currentConnection + "Directory: " + aisDecodeControl.getAisDecodeParams().outputDirectory); 
+		//System.out.println("CurrentConnection:" +  currentConnection + "Directory: " + aisDecodeControl.getAisDecodeParams().outputDirectory); 
 		if (currentConnection == null) {
 			//if the database does not exist try and find a database in the current folder. 
 
@@ -124,7 +119,7 @@ public class ExportAISSQLite implements AISDataExporter {
 			createNewTable(); 
 		}
 
-		System.out.println("CurrentConnection2:" +  currentConnection); 
+		//System.out.println("CurrentConnection2:" +  currentConnection); 
 
 	}
 

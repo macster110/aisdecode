@@ -1,6 +1,8 @@
 package layout;
 
 import aisDecode.AISDecodeParams;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 /**
  * Manages errors and sending user (hopefully) helpful hints
@@ -19,11 +21,15 @@ public class AISErrorManager {
 	 * @param message - the error message
 	 * @return true if the OK button was pressed. False if another button is pressed. 
 	 */
-	public boolean showErrorDialog(AISErrorMessage message) {
-		//TODO show dialog
-		return true; 
+	public void showErrorDialog(AISErrorMessage message) {
+		 // create a alert 
+        Alert a = new Alert(AlertType.ERROR); 
+  
+        a.setContentText(message.toString());
+        
+        a.showAndWait(); 
 	}
-	
+		
 	/**
 	 * Check whether the parameters are OK and return the first error that is found. 
 	 * @param aisParams - the aisParmas

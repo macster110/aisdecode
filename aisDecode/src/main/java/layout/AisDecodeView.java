@@ -8,8 +8,6 @@ import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.ToggleSwitch;
 
-import com.sun.javafx.tk.FileChooserType;
-
 import aisDataImport.AISDataUnit.AISDataTypes;
 import aisDecode.AISDecodeParams;
 import aisDecode.AisDecodeControl;
@@ -264,13 +262,18 @@ public class AisDecodeView extends BorderPane {
 			}
 			else {
 				//get the new params from the controls. 
-				AISDecodeParams newParams = this.getParams(this.aisControl.getAisDecodeParams()); 
+				AISDecodeParams newParams = this.getParams(this.aisControl.getAisDecodeParams());
+				//System.out.println("Run: new params: " + newParams); 
 				if (newParams!=null) {
+					//System.out.println("Run: new params2 : " + newParams); 
 					//set the new params in the control. 
 					this.aisControl.setAisDecodeParams(newParams);
 					aisControl.runAISDecode();
 					//set stop button graphic.
 					runButton.setGraphic(new MDL2IconFont("\uE71A"));
+				}
+				else {
+					System.err.println("Parameters was null: " + newParams); 
 				}
 			}
 		});
@@ -509,23 +512,23 @@ public class AisDecodeView extends BorderPane {
 		latLongFilterPane.setSpacing(5);
 		latLongFilterPane.getChildren().addAll(latLongFilterSwitch, latLongFilterLabel); 
 
-		minLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		minLatitudeSpinner = new Spinner<Double>(-90., 90., 56.0, 1.); 
 		minLatitudeSpinner.setPrefWidth(spinerWidth);
 		minLatitudeSpinner.setEditable(true);
 		minLatitudeSpinner.setTooltip(new Tooltip("The minimum latitude to import in decimal degrees")); 
 
-		maxLatitudeSpinner = new Spinner<Double>(-90, 90, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		maxLatitudeSpinner = new Spinner<Double>(-90., 90.,  57.0, 1.); 
 		maxLatitudeSpinner.setEditable(true);	
 		maxLatitudeSpinner.setPrefWidth(spinerWidth);
 		maxLatitudeSpinner.setTooltip(new Tooltip("The maximum latitude to import in decimal degrees")); 
 
 
-		minLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1);
+		minLongitudeSpinner = new Spinner<Double>(-180., 180., -5.0, 1.);
 		minLongitudeSpinner.setEditable(true);
 		minLongitudeSpinner.setPrefWidth(spinerWidth);
 		minLongitudeSpinner.setTooltip(new Tooltip("The minimum longitude to import in decimal degrees")); 
 
-		maxLongitudeSpinner = new Spinner<Double>(-180, 180, this.aisControl.getAisDecodeParams().maxFileSize, 1); 
+		maxLongitudeSpinner = new Spinner<Double>(-180., 180., 5.0, 1.); 
 		maxLongitudeSpinner.setEditable(true);
 		maxLongitudeSpinner.setPrefWidth(spinerWidth);
 		maxLongitudeSpinner.setTooltip(new Tooltip("The maximum longitude to import in decimal degrees")); 
@@ -634,9 +637,9 @@ public class AisDecodeView extends BorderPane {
 		if (aisParams.isLatLongFilter) {
 			//advanced pane - latitude long filter. 
 			aisParams.minLatitude 	= minLatitudeSpinner.getValue();
-			aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
-			aisParams.minLongitude 	= minLatitudeSpinner.getValue();
-			aisParams.maxLatitude 	= minLatitudeSpinner.getValue();
+			aisParams.maxLatitude 	= maxLatitudeSpinner.getValue();
+			aisParams.minLongitude 	= minLongitudeSpinner.getValue();
+			aisParams.maxLongitude 	= maxLongitudeSpinner.getValue();
 		}
 
 		//advanced pane time picker
