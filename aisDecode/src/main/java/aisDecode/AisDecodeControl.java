@@ -149,7 +149,9 @@ public class AisDecodeControl {
 	 */
 	private ArrayList<AISDataUnit> filterData(ArrayList<AISDataUnit> newData) {
 		
-		if (newData == null) return null; 
+		if (newData==null) {
+			return null; 
+		}
 
 		//first check if we need to do anything. Otherwise do not use resources iterating through data units. 
 		if (!aisDecodeParams.isDateLimits && !aisDecodeParams.isLatLongFilter) {
@@ -257,11 +259,12 @@ public class AisDecodeControl {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				return 1;
+				return -1;
 			}
 		}
 
-		@Override protected void cancelled() {
+		@Override 
+		protected void cancelled() {
 			super.cancelled();
 			isCancelled.setValue(true);
 		}

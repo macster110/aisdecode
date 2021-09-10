@@ -24,7 +24,13 @@ import javafx.scene.control.ProgressBar;
  *
  */
 public class ImportCSVData implements AISFileParser {
-
+		
+	/**
+	 * The available parsers for importing CSV files. 
+	 */
+	public ArrayList<CSVParser> parsers = new  ArrayList<CSVParser>(); 
+			
+			
 	@Override
 	public String getName() {
 		return "Danish Martime Authority CSV";
@@ -64,6 +70,8 @@ public class ImportCSVData implements AISFileParser {
 			csvReader = new BufferedReader(new FileReader(aisFileInfo.file));
 
 			ArrayList<AISDataUnit> aisDataUnits = new ArrayList<AISDataUnit>(); 
+			
+			CSVParser parser = null;
 
 			String row;
 			AISDataUnit aisDataUnit; 
@@ -80,7 +88,15 @@ public class ImportCSVData implements AISFileParser {
 					continue; //do not read header. 
 				}
 				
-				aisDataUnit  = parseCSVLine(row); 
+				
+				//calculate which type of parser we need to use. Note this assumes that the parser is the same
+				//for data within a file. 
+				if (parser ==null) {
+					 parser = calculateCSVParser(row); 
+				}
+				
+				//parse the CSV data. 
+				aisDataUnit  = parseCSVLine(row, parser); 
 				if (aisDataUnit!=null) {
 					aisDataUnits.add(aisDataUnit); 
 				}
@@ -106,7 +122,12 @@ public class ImportCSVData implements AISFileParser {
 
 	}
 
-	public static AISDataUnit parseCSVLine(String aisLine) {
+	private CSVParser calculateCSVParser(String row) {
+		// TODO Auto-generated method stub
+		return new SemiColonParser();
+	}
+
+	public static AISDataUnit parseCSVLine(String aisLine, CSVParser parser) {
 
 		try {
 			/**
@@ -117,11 +138,15 @@ public class ImportCSVData implements AISFileParser {
 			//04/11/2018 03:57:16,Class A,219012382,57.123067,8.597717,Under way using engine,0.0,0.0,,237,Unknown,OXQX2,GOLIATH VIG,Tug,,6,18,GPS,2.7,HANSTHOLM;,29/10/2019 07:00:00,AIS,5,13,3,3
 			//04/11/2018 00:00:00,Class A,212949000,55.020317,14.086050,Under way using engine,0.0,15.1,70.4,74,Unknown,,,Undefined,,,,Undefined,,,,AIS,,,,	
 
+			//Example which uses semi colons and commas in the dates...grrrr
+			//01/10/2014 00:00:00;Class A;245581000;55,164780;7,372295;Under way using engine;0,0;1,2;74,8;320;Unknown;;;Undefined;;;;Undefined;;;;AIS
+
 			AISDataUnit aisDataUnit = new AISDataUnit(); 
 
+			//find the correct parser.
+			String[] data = aisLine.split(parser.getColumnParser());
 			
-			String[] data = aisLine.split(",");
-
+	
 			//		for (int i=0; i<data.length; i++) {
 			//			System.out.println(i + " " + data[i]); 
 			//		}
@@ -211,7 +236,11 @@ public class ImportCSVData implements AISFileParser {
 	 */
 	public static double doubleValue(String string) {
 		if (string.isEmpty() || string.isBlank() || string.equals("Undefined")) return Double.NaN; 
-		else return Double.valueOf(string); 
+		else {
+			//just in case we have crazy folk who use commas instead of dots for decimal places. 
+			string = string.replaceAll(",","."); 
+			return Double.valueOf(string); 
+		}
 	}
 
 
@@ -244,13 +273,57 @@ public class ImportCSVData implements AISFileParser {
 			is.close();
 		}
 	}
+	
+//	/**
+//	 * Test the parser. 
+//	 * @param args
+//	 */
+//	public static void main(String[] args){
+//
+//		String aisLine = "04/11/2018 03:57:16,Class A,219012382,57.123067,8.597717,Under way using engine,0.0,0.0,,237,Unknown,OXQX2,GOLIATH VIG,Tug,,6,18,GPS,2.7,HANSTHOLM;,29/10/2019 07:00:00,AIS,5,13,3,3";
+//
+//		CommaParser parser= new CommaParser(); 
+//		AISDataUnit aisData = parseCSVLine(aisLine, parser); 
+//
+//	}
+	
+	
+	public class CommaParser implements CSVParser {
+		
+		public static final String COLPARSER = ","; 
+		
+		public static final String DECPARSER = "."; 
 
-	public static void main(String[] args){
+		
+		@Override
+		public String getColumnParser() {
+			return COLPARSER;
+		}
 
-		String aisLine = "04/11/2018 03:57:16,Class A,219012382,57.123067,8.597717,Under way using engine,0.0,0.0,,237,Unknown,OXQX2,GOLIATH VIG,Tug,,6,18,GPS,2.7,HANSTHOLM;,29/10/2019 07:00:00,AIS,5,13,3,3";
-
-		AISDataUnit aisData = parseCSVLine( aisLine); 
-
+		@Override
+		public String getDecimalParser() {
+			return DECPARSER;
+		}
+		
 	}
+	
+	public class SemiColonParser implements CSVParser {
+		
+		public static final String COLPARSER = ";"; 
+		
+		public static final String DECPARSER = ","; 
+
+		@Override
+		public String getColumnParser() {
+			return COLPARSER;
+		}
+
+		@Override
+		public String getDecimalParser() {
+			return DECPARSER;
+		}
+		
+	}
+	
 
 }
