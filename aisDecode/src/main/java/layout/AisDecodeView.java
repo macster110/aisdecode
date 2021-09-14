@@ -3,6 +3,7 @@ package layout;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.concurrent.ExecutionException;
 
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.PopOver;
@@ -690,6 +691,15 @@ public class AisDecodeView extends BorderPane {
 			statusLabel.setText("Data import over");
 			//set the run button to play. 
 			runButton.setGraphic(new MDL2IconFont("\uE768"));
+			try {
+				if (((RunTask) data).get()<0) {
+						aisErrorManager.showErrorDialog(AISErrorManager.AISErrorMessage.ERROR_IN_PARSING);
+						statusLabel.setText("Data import failed!");
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break; 
 		case IMPORT_DATA_CANCELLED:
 			statusLabel.textProperty().unbind();

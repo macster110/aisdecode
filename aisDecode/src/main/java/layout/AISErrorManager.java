@@ -12,8 +12,11 @@ import javafx.scene.control.Alert.AlertType;
  */
 public class AISErrorManager {
 	
+	
+	
+	//TODO - make better messages 
 	public enum AISErrorMessage {NO_ERROR, NO_INPUT_FOLDER, NO_OUTPUT_FOLDER, EMPTY_INPUT_FOLDER, 
-		LAT_LONG_LIMS, NO_DATA_TYPES_SELECTED, DATE_LIMS
+		LAT_LONG_LIMS, NO_DATA_TYPES_SELECTED, DATE_LIMS, ERROR_IN_PARSING
 	}
 	
 	/**

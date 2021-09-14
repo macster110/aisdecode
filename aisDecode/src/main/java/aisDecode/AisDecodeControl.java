@@ -202,7 +202,10 @@ public class AisDecodeControl {
 		double nfile = 0 ; 
 
 
-		SimpleBooleanProperty isCancelled = new SimpleBooleanProperty(); 
+		SimpleBooleanProperty isCancelled = new SimpleBooleanProperty();
+
+
+		private int saveCount; 
 
 
 		@Override 
@@ -210,6 +213,8 @@ public class AisDecodeControl {
 			
 			try {
 				
+				
+				saveCount =0 ; 
 				System.out.println("Start AIS import frame"); 
 				
 				AISFileParser importFileParser =  importAISFileTypes.get(aisDecodeParams.fileInputType); 
@@ -241,15 +246,23 @@ public class AisDecodeControl {
 					if (this.isCancelled()) return -1; 
 					importFileParser.parseAISFile(new AISFile(aisFile, (int) nfile, inputFiles.size(), isCancelled), (newData, progressFile, updateMessage)->{
 						//once new data has been parsed send it to the exporter
-						exportAISData.newAISData(filterData(newData)); 
+						
+						ArrayList<AISDataUnit> filtData = filterData(newData);
+						
+						if (filtData!=null) saveCount+=filtData.size();
+						
+						exportAISData.newAISData(filterData(filtData)); 
 
 						//the overall progress is the current number of files in plus the fraction of a file of progressFile
 						final double nn = nfile; 
 
-						System.out.println("Progress: " + nn+progressFile); 
+						System.out.println("Progress: " + (nn+progressFile)); 
+						
+						String updateMessage2  = updateMessage + String.format("\nNo. AIS data units saved: %d" , saveCount); 
 
 						updateProgress(nn+progressFile, inputFiles.size()); 
-						updateMessage(updateMessage); 
+						updateMessage(updateMessage2); 
+						
 					});
 					nfile=nfile+1.0; 
 				}

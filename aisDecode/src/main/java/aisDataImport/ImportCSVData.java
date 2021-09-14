@@ -29,6 +29,13 @@ public class ImportCSVData implements AISFileParser {
 	 * The available parsers for importing CSV files. 
 	 */
 	public ArrayList<CSVParser> parsers = new  ArrayList<CSVParser>(); 
+	
+	public ImportCSVData() {
+		parsers.add(new SemiColonParser());
+		parsers.add(new CommaParser()); 
+
+	}
+
 			
 			
 	@Override
@@ -122,9 +129,25 @@ public class ImportCSVData implements AISFileParser {
 
 	}
 
-	private CSVParser calculateCSVParser(String row) {
-		// TODO Auto-generated method stub
-		return new SemiColonParser();
+	/**
+	 * Figure out which parser to use for a csv file
+	 * @param row - a row of the CSV file
+	 * @return the correct parser to use. 
+	 */
+	private CSVParser calculateCSVParser(String line) {
+		
+		int maxcount =0; 
+		int index = 0; 
+		int count;
+		for (int i=0;i<parsers.size(); i++) {
+			count = line.length() - line.replace(parsers.get(i).getColumnParser(), "").length();
+			if (count>maxcount) {
+				maxcount=count; 
+				index = i; 
+			}
+		}
+		
+		return parsers.get(index); 
 	}
 
 	public static AISDataUnit parseCSVLine(String aisLine, CSVParser parser) {
