@@ -31,6 +31,8 @@ public interface AISFileParser {
 	 * @param aisDataListener - the listener to send data to. 
 	 */
 	public void parseAISFile(AISFile file, AISDataListener aisDataListener); 
+	
+	
 
 
 }

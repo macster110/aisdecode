@@ -63,6 +63,33 @@ public class AISDecodeUtils {
 		long millis = (long) ((datenum-719529.0)*86400000.0);
 		return millis; 
 	}
+	
+	
+	/**
+	 * Convert to Unix Epoch. This is used by R. 
+	 * @param millis -  Java datetime millis
+	 */
+	public static long millisToUnixEpoch(long millis) {
+		return millis/1000L;
+	}
+
+	/**
+	 * Converts millis to an excel serial data based on the Jan 1900 system. 
+	 * @param timeMillis
+	 * @return excel serial datenum. 
+	 */
+	public static double millistoExcelSerial(long timeMillis){
+		return (millistoDateNum(timeMillis)-693960.0);
+	}
+
+	/**
+	 * Converts excel Serial date number (Jan 1900 format) to millis. 
+	 * @param excelSerial datenum
+	 * @return timeMillis equivalent of the excel datenum. 
+	 */
+	public static long excelSerialtoMillis(double excelSerial){
+		return (dateNumtoMillis(excelSerial+693960.0));
+	}
 
 
 

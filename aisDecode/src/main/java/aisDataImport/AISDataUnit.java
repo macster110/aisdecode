@@ -1,5 +1,7 @@
 package aisDataImport;
 
+import aisDataImport.AISDataUnit.AISDataTypes;
+import aisDecode.AISDecodeUtils;
 
 /**
  * Stores a single AIS data line. 
@@ -26,27 +28,27 @@ package aisDataImport;
  *
  */
 public class AISDataUnit {
-	
+
 	/**
 	 * List of available data types. 
 	 * @author Jamie Macaulay 
 	 *
 	 */
-	public enum AISDataTypes {MMSI, IMO, LATITUDE, LONGITUDE, HEADING,  SOG, COG, ROT, WIDTH, LENGTH, DRAUGHT, VESSEL_NAME, VESSEL_TYPE}
-	
+	public enum AISDataTypes {DATE, MMSI, IMO, LATITUDE, LONGITUDE, HEADING,  SOG, COG, ROT, WIDTH, LENGTH, DRAUGHT, VESSEL_NAME, VESSEL_TYPE}
+
 
 	/**
 	 * Create the AIS data unit. 
 	 */
 	public AISDataUnit() {
-		
+
 	}
-	
+
 	/**
 	 * The time in millis
 	 */
 	protected Long time; 
-	
+
 	/**
 	 * The vessel's  Maritime Mobile Service Identity (MMSI) number
 	 */
@@ -66,32 +68,32 @@ public class AISDataUnit {
 	 * The longitude of the vessel in longitude. 
 	 */
 	protected Double longitude; 
-	
+
 	/**
 	 * The speed over fround in knots 
 	 */
 	protected Double SOG; 
-	
+
 	/**
 	 * The course over ground; a bearing in degrees. 
 	 */
 	protected Double COG;
-	
+
 	/**
 	 * The width of the vessel in meters
 	 */
 	protected Double width;
-	
+
 	/**
 	 * The length of the vessel in meters
 	 */
 	protected Double length; 
-	
+
 	/**
 	 * The name of the vessel
 	 */
 	protected String name;
-	
+
 	/**
 	 * The vessel type. 
 	 */
@@ -129,7 +131,7 @@ public class AISDataUnit {
 	public Double heading;
 
 	public Double draught;
-	
+
 	public long getTime() {
 		return time;
 	}
@@ -218,5 +220,54 @@ public class AISDataUnit {
 		this.type = type;
 	}
 
+	/**
+	 * Get the value of the data for a defined data type.
+	 * @param type - the desired type of data
+	 * @return the data value - can be null if the data type is not available. 
+	 */
+	public Object getAISData(AISDataTypes type) {
+		switch (type) {
+		case DATE:
+			return this.getTime(); 
+		case COG:
+			return this.getCOG();
+		case DRAUGHT:
+			return this.getDraught();
+		case HEADING:
+			return this.getHeading();
+		case IMO:
+			return this.getIMO();
+		case LATITUDE:
+			return this.getLatitude();
+		case LENGTH:
+			return this.getLength();
+		case LONGITUDE:
+			return this.getLongitude();
+		case MMSI:
+			return this.getMMSI();
+		case ROT:
+			return this.getROT();
+		case SOG:
+			return this.getSOG();
+		case VESSEL_NAME:
+			return this.getName();
+		case VESSEL_TYPE:
+			return this.getType();
+		case WIDTH:
+			return this.getWidth();
+		default:
+			break;
+		}
+		
+		return null; 
+	}
+
+	public void printValues() {
+		AISDataTypes[] values =  AISDataTypes.values(); 
+		for (int i=0; i<values.length; i++) {
+			System.out.println(values[i] + "  " + getAISData(values[i]) ); 
+		}
+		
+	}
 
 }

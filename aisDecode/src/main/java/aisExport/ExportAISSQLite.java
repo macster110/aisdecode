@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import aisDataImport.AISDataUnit;
 import aisDataImport.AISDataUnit.AISDataTypes;
 import aisDecode.AISDecodeParams;
+import aisDecode.AISDecodeUtils;
 import aisDecode.AisDecodeControl;
 
 /**
@@ -31,8 +32,8 @@ public class ExportAISSQLite implements AISDataExporter {
 	public final static String AIS_TABLE_NAME  = "AIS_data"; 
 	
 	
-	private static String sql = "INSERT INTO "+AIS_TABLE_NAME+"(MMSI,IMO, LATITUDE, LONGITUDE, HEADING, SOG, COG, ROT, WIDTH, LENGTH, DRAUGHHT, VESSEL_NAME, VESSEL_TYPE) "
-			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static String sql = "INSERT INTO "+AIS_TABLE_NAME+"(DATE, MMSI,IMO, LATITUDE, LONGITUDE, HEADING, SOG, COG, ROT, WIDTH, LENGTH, DRAUGHHT, VESSEL_NAME, VESSEL_TYPE) "
+			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 
 	/**
@@ -65,7 +66,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	public void newAISData(ArrayList<AISDataUnit> newData) {
 
 		//check the database exists. 
-		checkDatabase(); 
+		checkDatabase(aisDecodeControl.getAisDecodeParams().outputDirectory); 
 
 		if (newData!=null) {
 			for (int i=0; i<newData.size(); i++) {
@@ -86,7 +87,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	/**
 	 * Check the database exists and whether we need to create a new one
 	 */
-	public void checkDatabase() {
+	public void checkDatabase(String outputDirectory) {
 		// check the database connection exists. 
 		//System.out.println("CurrentConnection:" +  currentConnection + "Directory: " + aisDecodeControl.getAisDecodeParams().outputDirectory); 
 		if (currentConnection == null) {
@@ -105,9 +106,9 @@ public class ExportAISSQLite implements AISDataExporter {
 			//			}
 			//			else {
 			//				file = aisDecodeControl.getAisDecodeParams().outputDirectory +  "\\ais_database.sqlite3";
-			createNewDatabase(aisDecodeControl.getAisDecodeParams().outputDirectory); 
+			createNewDatabase(outputDirectory); 
 			//			}
-			currentConnection = connect( aisDecodeControl.getAisDecodeParams().outputDirectory); 
+			currentConnection = connect(outputDirectory); 
 			try {
 				currentConnection.setAutoCommit(false);
 			} catch (SQLException e) {
@@ -132,6 +133,7 @@ public class ExportAISSQLite implements AISDataExporter {
 		// SQL statement for creating a new table
 		String sql = "CREATE TABLE IF NOT EXISTS "+AIS_TABLE_NAME+" (\n"
 				+ "	id integer PRIMARY KEY,\n"
+				+ " DATE double, \n"
 				+ "	MMSI integer,\n"
 				+ "	IMO text,\n"
 				+ "	LATITUDE real,\n"
@@ -170,44 +172,47 @@ public class ExportAISSQLite implements AISDataExporter {
 
 			for (int i=0; i<AISDataTypes.values().length; i++) {
 				switch (AISDataTypes.values()[i]) {
+				case DATE:
+					pstmt.setDouble(1, AISDecodeUtils.millistoExcelSerial(aisDataUnit.getTime())); 
 				case COG:
-					pstmt.setDouble(7, aisDataUnit.getCOG());
+					pstmt.setDouble(8, aisDataUnit.getCOG());
 					break;
 				case DRAUGHT:
-					pstmt.setDouble(10, aisDataUnit.getDraught());
+					pstmt.setDouble(12, aisDataUnit.getDraught());
 					break;
 				case HEADING:
-					pstmt.setDouble(5, aisDataUnit.getHeading());
+					pstmt.setDouble(6, aisDataUnit.getHeading());
 					break;
 				case IMO:
-					pstmt.setString(2, aisDataUnit.getIMO());
+					pstmt.setString(3, aisDataUnit.getIMO());
 					break;
 				case LATITUDE:
-					pstmt.setDouble(3, aisDataUnit.getLatitude());
+					pstmt.setDouble(4, aisDataUnit.getLatitude());
 					break;
 				case LENGTH:
-					pstmt.setDouble(9, aisDataUnit.getLength());
+					pstmt.setDouble(11, aisDataUnit.getLength());
 					break;
 				case LONGITUDE:
-					pstmt.setDouble(4, aisDataUnit.getLongitude());
+					pstmt.setDouble(5, aisDataUnit.getLongitude());
 					break;
 				case MMSI:
-					pstmt.setDouble(1, aisDataUnit.getMMSI());
+					pstmt.setDouble(2, aisDataUnit.getMMSI());
 					break;
 				case ROT:
-					pstmt.setDouble(7, aisDataUnit.getROT());
+					pstmt.setDouble(9, aisDataUnit.getROT());
 					break;
 				case SOG:
-					pstmt.setDouble(6, aisDataUnit.getSOG());
+					pstmt.setDouble(7, aisDataUnit.getSOG());
 					break;
 				case VESSEL_NAME:
-					pstmt.setString(11, aisDataUnit.getName());
+					pstmt.setString(13, aisDataUnit.getName());
 					break;
 				case VESSEL_TYPE:
-					pstmt.setString(12, aisDataUnit.getType());
+					//System.out.println("Write the vessel type to the database: " +  aisDataUnit.getType()); 
+					pstmt.setString(14, aisDataUnit.getType());
 					break;
 				case WIDTH:
-					pstmt.setDouble(8, aisDataUnit.getWidth());
+					pstmt.setDouble(10, aisDataUnit.getWidth());
 					break;
 				default:
 					break;
@@ -302,6 +307,8 @@ public class ExportAISSQLite implements AISDataExporter {
 	public boolean isExport2Folder() {
 		return false;
 	}
+
+
 
 
 }
