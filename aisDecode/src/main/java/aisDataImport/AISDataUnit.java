@@ -34,7 +34,7 @@ public class AISDataUnit {
 	 * @author Jamie Macaulay 
 	 *
 	 */
-	public enum AISDataTypes {DATE, MMSI, IMO, LATITUDE, LONGITUDE, HEADING,  SOG, COG, ROT, WIDTH, LENGTH, DRAUGHT, VESSEL_NAME, VESSEL_TYPE}
+	public enum AISDataTypes {DATE, MMSI, IMO, LATITUDE, LONGITUDE, HEADING,  SOG, COG, ROT, WIDTH, LENGTH, DRAUGHT, VESSEL_NAME, VESSEL_TYPE, VESSEL_CALLSIGN}
 
 
 	/**
@@ -98,6 +98,12 @@ public class AISDataUnit {
 	 * The vessel type. 
 	 */
 	protected String type;
+	
+	/**
+	 * The vessel call sign
+	 */
+	public String callsign;
+
 
 	/**
 	 * Rate of turn of the vessel.
@@ -219,6 +225,16 @@ public class AISDataUnit {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+
+	public String getCallSign() {
+		return callsign;
+	}
+
+	public void setCallSign(String callsign) {
+		this.callsign = callsign;
+	}
+
 
 	/**
 	 * Get the value of the data for a defined data type.
@@ -253,6 +269,8 @@ public class AISDataUnit {
 			return this.getName();
 		case VESSEL_TYPE:
 			return this.getType();
+		case VESSEL_CALLSIGN:
+			return this.getCallSign();
 		case WIDTH:
 			return this.getWidth();
 		default:

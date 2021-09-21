@@ -32,8 +32,8 @@ public class ExportAISSQLite implements AISDataExporter {
 	public final static String AIS_TABLE_NAME  = "AIS_data"; 
 	
 	
-	private static String sql = "INSERT INTO "+AIS_TABLE_NAME+"(DATE, MMSI,IMO, LATITUDE, LONGITUDE, HEADING, SOG, COG, ROT, WIDTH, LENGTH, DRAUGHHT, VESSEL_NAME, VESSEL_TYPE) "
-			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static String sql = "INSERT INTO "+AIS_TABLE_NAME+"(DATE, MMSI,IMO, LATITUDE, LONGITUDE, HEADING, SOG, COG, ROT, WIDTH, LENGTH, DRAUGHHT, VESSEL_NAME, VESSEL_TYPE, VESSEL_CALLSIGN) "
+			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 
 	/**
@@ -146,7 +146,8 @@ public class ExportAISSQLite implements AISDataExporter {
 				+ "	LENGTH real,\n"
 				+ "	DRAUGHHT real,\n"
 				+ "	VESSEL_NAME text,\n"
-				+ "	VESSEL_TYPE text\n"
+				+ "	VESSEL_TYPE text,\n"
+				+ "	VESSEL_CALLSIGN text\n"
 				+ ");";
 
 		try {
@@ -210,6 +211,10 @@ public class ExportAISSQLite implements AISDataExporter {
 				case VESSEL_TYPE:
 					//System.out.println("Write the vessel type to the database: " +  aisDataUnit.getType()); 
 					pstmt.setString(14, aisDataUnit.getType());
+					break;
+				case VESSEL_CALLSIGN:
+					//System.out.println("Write the vessel type to the database: " +  aisDataUnit.getType()); 
+					pstmt.setString(15, aisDataUnit.getCallSign());
 					break;
 				case WIDTH:
 					pstmt.setDouble(10, aisDataUnit.getWidth());
