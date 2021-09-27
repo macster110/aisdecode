@@ -106,7 +106,7 @@ public class ExportAISSQLite implements AISDataExporter {
 			//			}
 			//			else {
 			//				file = aisDecodeControl.getAisDecodeParams().outputDirectory +  "\\ais_database.sqlite3";
-			createNewDatabase(outputDirectory); 
+			connect2Database(outputDirectory); 
 			//			}
 			currentConnection = connect(outputDirectory); 
 			try {
@@ -225,6 +225,10 @@ public class ExportAISSQLite implements AISDataExporter {
 			}
 			pstmt.executeUpdate();
 			
+			//need this to prevent memory leaks. 
+			pstmt.closeOnCompletion();
+			pstmt.close();
+			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
@@ -253,7 +257,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	 *
 	 * @param fileName the database file name
 	 */
-	public static void createNewDatabase(String fileName) {
+	public static void connect2Database(String fileName) {
 
 		String url = "jdbc:sqlite:" + fileName;
 
@@ -268,6 +272,33 @@ public class ExportAISSQLite implements AISDataExporter {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	
+//	 /**
+//     * Connect to a sample database
+//     */
+//    public static void connect() {
+//        Connection conn = null;
+//        try {
+//            // db parameters
+//            String url = "jdbc:sqlite:C:/sqlite/db/chinook.db";
+//            // create a connection to the database
+//            conn = DriverManager.getConnection(url);
+//            
+//            System.out.println("Connection to SQLite has been established.");
+//            
+//        } catch (SQLException e) {
+//            System.out.println(e.getMessage());
+//        } finally {
+//            try {
+//                if (conn != null) {
+//                    conn.close();
+//                }
+//            } catch (SQLException ex) {
+//                System.out.println(ex.getMessage());
+//            }
+//        }
+//    }
 
 
 	@Override
@@ -299,7 +330,7 @@ public class ExportAISSQLite implements AISDataExporter {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
-		createNewDatabase("/Users/au671271/Desktop/test.sqlite3"); 
+		connect2Database("/Users/au671271/Desktop/test.sqlite3"); 
 	}
 
 	@Override
