@@ -40,6 +40,8 @@ There are currently two input and output data types. New types can easily be add
 
 #### Danish coastguard .csv files
 
+#### AIS NMEA files
+
 ### Ouput data types
 
 #### SQLite
